@@ -72,6 +72,7 @@ export type Data = {
   records: RecordValue[];
   outbox: Operation[];
   connected: boolean;
+  syncOrigin?: string;
   source: string;
   preferences: Preferences;
   notified: Record<string, number>;

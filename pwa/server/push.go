@@ -86,7 +86,7 @@ func validSubscription(s webpush.Subscription) bool {
 	return allowed && e1 == nil && e2 == nil && len(auth) == 16 && len(key) == 65 && key[0] == 4
 }
 func (g *gateway) pushRequest(w http.ResponseWriter, r *http.Request) {
-	cookie, _ := r.Cookie("vervetwodo_session")
+	cookie, _ := r.Cookie(g.cookieName())
 	session := hash(cookie.Value)
 	if r.URL.Path == "/api/push/key" {
 		g.mu.Lock()

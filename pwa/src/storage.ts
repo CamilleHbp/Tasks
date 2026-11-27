@@ -57,3 +57,44 @@ export function subscribe(fn: () => void) {
     subscribers.delete(fn);
   };
 }
+
+// Keep pending edits and task IDs with the workspace that created them.
+export async function activateWorkspace(origin: string, defaultOrigin: string) {
+  const db = await open();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction("state", "readwrite");
+    const store = tx.objectStore("state");
+    const current = store.get("data");
+    current.onsuccess = () => {
+      const previous: Data = current.result || initial();
+      const lastOrigin = previous.syncOrigin || (previous.connected ? defaultOrigin : "");
+      function activate(next: Data) {
+        next.connected = true;
+        next.syncOrigin = origin;
+        next.revision = Math.max(previous.revision, next.revision) + 1;
+        store.put(next, "data");
+      }
+      if (!lastOrigin || lastOrigin === origin) {
+        activate(previous);
+        return;
+      }
+      store.put(previous, "workspace:" + lastOrigin);
+      const cached = store.get("workspace:" + origin);
+      cached.onsuccess = () => {
+        const next: Data = cached.result || initial();
+        if (!cached.result) {
+          next.preferences.language = previous.preferences.language;
+          next.preferences.theme = previous.preferences.theme;
+        }
+        activate(next);
+        store.delete("workspace:" + origin);
+      };
+    };
+    tx.oncomplete = () => {
+      channel?.postMessage("changed");
+      subscribers.forEach(fn => fn());
+      resolve();
+    };
+    tx.onerror = tx.onabort = () => reject(Error("storageError"));
+  });
+}

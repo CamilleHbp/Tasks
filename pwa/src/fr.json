@@ -325,7 +325,7 @@
   "more": "Plus",
   "tagFilter": "Filtrer par étiquette",
   "deleteTagConfirm": "Supprimer cette étiquette ? Les tâches seront conservées.",
-  "syncWebDescription": "Utilisez le même code d’accès privé que dans votre application Mac ou Android. Vos tâches sont fusionnées avec cet espace.",
+  "syncWebDescription": "Saisissez la même URL de synchronisation et le même code d’accès que sur Android ou dans le widget. Chaque espace conserve ses tâches et ses modifications en attente.",
   "webError": "Une erreur est survenue. Veuillez réessayer.",
   "backupImportConfirm": "Importer cette sauvegarde comme nouvelles tâches ? Les tâches existantes seront conservées.",
   "checkUpdatesError": "Impossible de rechercher des mises à jour. Vérifiez votre connexion et réessayez.",
@@ -333,7 +333,7 @@
   "data": "Données",
   "defaultTag": "Étiquette par défaut",
   "taskCount": "tâches",
-  "syncPrivacy": "Votre code d’accès privé est envoyé uniquement au serveur de cette application.",
+  "syncPrivacy": "Tâches vérifie votre code d’accès auprès du serveur de synchronisation choisi.",
   "local": "Uniquement dans ce navigateur",
   "pending": "Modifications en attente",
   "syncing": "Synchronisation…",
@@ -380,5 +380,8 @@
   "dailyMultiple": "Tous les %d jours",
   "weeklyMultiple": "Toutes les %d semaines",
   "monthlyMultiple": "Tous les %d mois",
-  "yearlyMultiple": "Tous les %d ans"
+  "yearlyMultiple": "Tous les %d ans",
+  "syncUrl": "URL de synchronisation",
+  "invalidSyncUrl": "Saisissez l’adresse HTTPS du serveur de synchronisation, sans chemin.",
+  "unknownSyncServer": "Ce serveur n’est pas configuré pour cette application web. Vérifiez l’URL ou demandez à l’hébergeur de l’ajouter."
 }

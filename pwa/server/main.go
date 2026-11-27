@@ -1,5 +1,5 @@
 // VerveTwoDo's browser gateway owns an independent native sync replica.
-// Only the fixed upstream workspace is exposed; private provisioning never reaches browsers.
+// Each configured workspace has its own replica, browser sessions and reminder subscriptions.
 package main
 
 import (
@@ -12,6 +12,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,17 +24,18 @@ import (
 
 type engine interface{ Call(string, string) string }
 type gateway struct {
-	engine                                            engine
+	sessionName                                                        string
+	engine                                                             engine
 	origin, legacyOrigin, migrationOrigin, upstream, directory, assets string
-	secure                                            bool
-	mu                                                sync.Mutex
-	call                                              sync.Mutex
-	sessions                                          map[string]int64
-	attempts                                          []time.Time
-	watchers                                          map[chan struct{}]struct{}
-	lastView                                          string
-	push                                              pushStore
-	pushSender                                        interface {
+	secure                                                             bool
+	mu                                                                 sync.Mutex
+	call                                                               sync.Mutex
+	sessions                                                           map[string]int64
+	attempts                                                           []time.Time
+	watchers                                                           map[chan struct{}]struct{}
+	lastView                                                           string
+	push                                                               pushStore
+	pushSender                                                         interface {
 		Do(*http.Request) (*http.Response, error)
 	}
 }
@@ -68,8 +70,14 @@ func (g *gateway) saveSessions() error {
 	}
 	return os.Rename(temp, filepath.Join(g.directory, "sessions.json"))
 }
+func (g *gateway) cookieName() string {
+	if g.sessionName == "" {
+		return "vervetwodo_session"
+	}
+	return g.sessionName
+}
 func (g *gateway) authenticated(r *http.Request) bool {
-	cookie, err := r.Cookie("vervetwodo_session")
+	cookie, err := r.Cookie(g.cookieName())
 	if err != nil {
 		return false
 	}
@@ -78,7 +86,7 @@ func (g *gateway) authenticated(r *http.Request) bool {
 	return g.sessions[hash(cookie.Value)] > time.Now().Unix()
 }
 func (g *gateway) cookie(w http.ResponseWriter, token string, age int) {
-	http.SetCookie(w, &http.Cookie{Name: "vervetwodo_session", Value: token, Path: "/api/", HttpOnly: true, Secure: g.secure, SameSite: http.SameSiteStrictMode, MaxAge: age})
+	http.SetCookie(w, &http.Cookie{Name: g.cookieName(), Value: token, Path: "/api/", HttpOnly: true, Secure: g.secure, SameSite: http.SameSiteStrictMode, MaxAge: age})
 }
 func decode(w http.ResponseWriter, r *http.Request, out any) error {
 	r.Body = http.MaxBytesReader(w, r.Body, 210000)
@@ -157,7 +165,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/api/logout" {
 		g.mu.Lock()
-		c, _ := r.Cookie("vervetwodo_session")
+		c, _ := r.Cookie(g.cookieName())
 		delete(g.sessions, hash(c.Value))
 		err := g.saveSessions()
 		g.mu.Unlock()
@@ -297,7 +305,7 @@ func (g *gateway) login(w http.ResponseWriter, r *http.Request) {
 		fail(w, 429)
 		return
 	}
-	if prior, err := r.Cookie("vervetwodo_session"); err == nil {
+	if prior, err := r.Cookie(g.cookieName()); err == nil {
 		delete(g.sessions, hash(prior.Value))
 	}
 	g.sessions[hash(token)] = now.Add(30 * 24 * time.Hour).Unix()
@@ -311,7 +319,7 @@ func (g *gateway) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	g.cookie(w, token, 30*24*3600)
-	send(w, 200, map[string]bool{"ok": true})
+	send(w, 200, map[string]any{"ok": true, "syncOrigin": g.upstream})
 }
 func (g *gateway) static(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" && r.Method != "HEAD" {
@@ -350,8 +358,7 @@ func env(key, fallback string) string {
 	}
 	return fallback
 }
-func main() {
-	directory := env("DATA_DIR", "./data")
+func openGateway(directory, upstream, sessionName string) *gateway {
 	if err := os.MkdirAll(directory, 0700); err != nil {
 		log.Fatal(err)
 	}
@@ -359,9 +366,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer e.Close()
-	g := &gateway{engine: e, origin: env("PUBLIC_ORIGIN", "http://127.0.0.1:8791"), legacyOrigin: os.Getenv("LEGACY_ORIGIN"), migrationOrigin: os.Getenv("MIGRATION_ORIGIN"), upstream: env("SYNC_ORIGIN", "https://vervetwodo.195-15-214-30.sslip.io"), directory: directory, assets: env("ASSET_DIR", "../dist"), sessions: map[string]int64{}}
+
+	g := &gateway{engine: e, origin: env("PUBLIC_ORIGIN", "http://127.0.0.1:8791"), legacyOrigin: os.Getenv("LEGACY_ORIGIN"), migrationOrigin: os.Getenv("MIGRATION_ORIGIN"), upstream: upstream, directory: directory, assets: env("ASSET_DIR", "../dist"), sessions: map[string]int64{}}
 	g.secure = strings.HasPrefix(g.origin, "https://")
+	g.sessionName = sessionName
 
 	if b, err := os.ReadFile(filepath.Join(directory, "sessions.json")); err == nil {
 		if json.Unmarshal(b, &g.sessions) != nil {
@@ -375,8 +383,48 @@ func main() {
 	}
 	e.StartUpdates(updateListener{g.signal})
 	go g.reminderLoop()
-	server := http.Server{Addr: env("LISTEN_ADDR", "127.0.0.1:8791"), Handler: g, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 90 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
-	log.Printf("VerveTwoDo web listening on %s", server.Addr)
+	return g
+}
+
+type workspaces struct {
+	primary  *gateway
+	byOrigin map[string]*gateway
+}
+
+func (ws workspaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	g := ws.primary
+	if strings.HasPrefix(r.URL.Path, "/api/") {
+		selected := strings.TrimSuffix(r.URL.Query().Get("workspace"), "/")
+		if selected != "" && selected != g.upstream && !g.allowedOrigin(selected) {
+			g = ws.byOrigin[selected]
+			if g == nil {
+				send(w, http.StatusBadRequest, map[string]string{"error": "unknownSyncServer"})
+				return
+			}
+		}
+	}
+	g.ServeHTTP(w, r)
+}
+
+func main() {
+	directory := env("DATA_DIR", "./data")
+	upstream := strings.TrimRight(env("SYNC_ORIGIN", "https://vervetwodo.195-15-214-30.sslip.io"), "/")
+	primary := openGateway(directory, upstream, "")
+	ws := workspaces{primary: primary, byOrigin: map[string]*gateway{}}
+	for _, value := range strings.FieldsFunc(os.Getenv("SYNC_ORIGINS"), func(r rune) bool { return r == ',' || r == ' ' || r == '\n' }) {
+		origin := strings.TrimRight(value, "/")
+		u, err := url.Parse(origin)
+		if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
+			log.Fatal("SYNC_ORIGINS requires HTTPS origins")
+		}
+		if origin == upstream || ws.byOrigin[origin] != nil {
+			continue
+		}
+		id := hash(origin)
+		ws.byOrigin[origin] = openGateway(filepath.Join(directory, "workspaces", id), origin, "tasks_session_"+id[:16])
+	}
+	server := http.Server{Addr: env("LISTEN_ADDR", "127.0.0.1:8791"), Handler: ws, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 90 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
+	log.Printf("Tasks web listening on %s", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
 

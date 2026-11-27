@@ -12,7 +12,7 @@ import {
 import { IconLabel } from "./TaskIcon";
 import { Text } from "./i18n";
 import { Modal, Field, TimeInput } from "./components";
-import { connect, disconnect, sync, SyncStatus } from "./sync";
+import { connect, defaultSyncOrigin, disconnect, sync, SyncStatus } from "./sync";
 import { enablePush, disablePush } from "./push";
 import {
   WidgetPlatform,
@@ -348,6 +348,13 @@ export function SyncSettings({
   onClose,
   status,
 }: Props & { status: SyncStatus }) {
+  const [address, setAddress] = useState(data.syncOrigin || "");
+  useEffect(() => {
+    if (data.syncOrigin) {setAddress(data.syncOrigin); return;}
+    let active = true;
+    void defaultSyncOrigin().then(url => { if (active) setAddress(value => value || url); }).catch(() => {});
+    return () => { active = false; };
+  }, [data.syncOrigin]);
   const [code, setCode] = useState(""),
     [busy, setBusy] = useState(false);
   const issues = conflicts(data);
@@ -364,7 +371,7 @@ export function SyncSettings({
           e.preventDefault();
           setBusy(true);
           try {
-            await connect(code);
+            await connect(code, address);
             setCode("");
           } catch (e) {
             notice(e instanceof Error ? e.message : "syncError");
@@ -373,6 +380,11 @@ export function SyncSettings({
           }
         }}
       >
+        <Field label={t("syncUrl")}>
+          <input type="url" required value={address} placeholder="https://"
+            autoCapitalize="none" autoCorrect="off" spellCheck={false}
+            onChange={e => setAddress(e.target.value)} />
+        </Field>
         <Field label={t("syncCode")}>
           <input
             type="password"

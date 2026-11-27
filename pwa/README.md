@@ -65,3 +65,5 @@ This edition is served over HTTPS rather than distributed as an APK or desktop p
 ## Credits and license
 
 Tasks builds on VerveDo by super12138. Category artwork and English/French application vocabulary are reused from this repository’s desktop resources. The application is distributed under the repository’s GPL-3.0 license. Third-party libraries retain their respective licenses in the dependency metadata.
+
+In **Synchronization**, enter the sync URL and access code used on Android or in the widget. Switching servers keeps each workspace’s tasks and queued changes in a separate local store. For self-hosted deployments, set `SYNC_ORIGIN` to the default native server and `SYNC_ORIGINS` to a comma-separated list of additional HTTPS origins. Each server gets its own replica, sessions and reminder subscriptions.

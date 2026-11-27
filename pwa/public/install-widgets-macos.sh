@@ -66,6 +66,7 @@ if ! ditto "$new" "$target"; then
   [ -e "$work/previous.app" ] && mv "$work/previous.app" "$target"
   fail "Tasks Widgets could not be installed." "Widgets Tâches n’a pas pu être installé."
 fi
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$target"
 for extension in "$target"/Contents/PlugIns/*.appex; do pluginkit -a "$extension" 2>/dev/null || true; done
 open "$target"
 say "Tasks Widgets is installed. Connect with your access code, then add Tasks from Edit Widgets." \

@@ -325,7 +325,7 @@
   "more": "More",
   "tagFilter": "Filter by tag",
   "deleteTagConfirm": "Delete this tag? Tasks will be kept.",
-  "syncWebDescription": "Use the same private access code as your Mac or Android app. Your tasks merge with that workspace.",
+  "syncWebDescription": "Enter the same sync URL and access code you use on Android or in the widget. Each workspace keeps its own tasks and pending edits.",
   "webError": "Something went wrong. Please try again.",
   "backupImportConfirm": "Import this backup as new tasks? Existing tasks will be kept.",
   "checkUpdatesError": "Could not check for updates. Check your connection and try again.",
@@ -333,7 +333,7 @@
   "data": "Data",
   "defaultTag": "Default tag",
   "taskCount": "tasks",
-  "syncPrivacy": "Your private access code is sent only to this app’s server.",
+  "syncPrivacy": "Tasks verifies your access code with the sync server you select.",
   "local": "Only on this browser",
   "pending": "Changes waiting",
   "syncing": "Synchronizing…",
@@ -380,5 +380,8 @@
   "dailyMultiple": "Every %d days",
   "weeklyMultiple": "Every %d weeks",
   "monthlyMultiple": "Every %d months",
-  "yearlyMultiple": "Every %d years"
+  "yearlyMultiple": "Every %d years",
+  "syncUrl": "Sync URL",
+  "invalidSyncUrl": "Enter the HTTPS address of your sync server, without a path.",
+  "unknownSyncServer": "This server is not configured on this Tasks web app. Check the URL or ask the host to add it."
 }

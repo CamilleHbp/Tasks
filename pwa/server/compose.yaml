@@ -12,6 +12,7 @@ services:
       MIGRATION_ORIGIN: https://todo.camille.studio
       LEGACY_ORIGIN: https://vervetwodo-web.195-15-214-30.sslip.io
       SYNC_ORIGIN: https://vervetwodo.195-15-214-30.sslip.io
+      SYNC_ORIGINS: ${SYNC_ORIGINS:-https://vervetwodo-emy.195-15-214-30.sslip.io}
     volumes:
       - /srv/homeserver/data/vervetwodo-web:/data
     networks: [web]

@@ -146,3 +146,31 @@ func TestSyncDiscovery(t *testing.T) {
 		t.Fatal(r.Code)
 	}
 }
+
+func TestWorkspaceRoutingKeepsSessionsAndReplicasSeparate(t *testing.T) {
+	primary, second := setup(t), setup(t)
+	second.upstream = "https://second.example"
+	second.sessionName = "tasks_session_second"
+	ws := workspaces{primary: primary, byOrigin: map[string]*gateway{second.upstream: second}}
+	call := func(origin, cookie string) int {
+		r := httptest.NewRequest("POST", "/api/state?workspace="+origin, strings.NewReader("{}"))
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Origin", primary.origin)
+		r.AddCookie(&http.Cookie{Name: cookie, Value: "valid"})
+		w := httptest.NewRecorder()
+		ws.ServeHTTP(w, r)
+		return w.Code
+	}
+	if call(second.upstream, primary.cookieName()) != 401 || call(primary.upstream, second.cookieName()) != 401 {
+		t.Fatal("cross-workspace cookie accepted")
+	}
+	if call("https://unknown.example", primary.cookieName()) != 400 {
+		t.Fatal("unconfigured server accepted")
+	}
+	if call(second.upstream, second.cookieName()) != 200 || len(second.engine.(*fakeEngine).calls) != 1 || len(primary.engine.(*fakeEngine).calls) != 0 {
+		t.Fatal("wrong replica")
+	}
+	if call(primary.origin, primary.cookieName()) != 200 {
+		t.Fatal("old web address unavailable")
+	}
+}

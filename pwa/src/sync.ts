@@ -1,5 +1,5 @@
 import { Operation, project } from "./model";
-import { read, mutate } from "./storage";
+import { read, mutate, activateWorkspace, subscribe } from "./storage";
 import { updatePush } from "./push";
 export type SyncStatus =
   "local" | "syncing" | "synced" | "pending" | "offline" | "error" | "signIn";
@@ -9,8 +9,17 @@ let listener: (s: SyncStatus) => void = () => {};
 export function onSync(fn: typeof listener) {
   listener = fn;
 }
-export async function api(path: string, body: unknown = {}) {
-  const response = await fetch(`/api/${path}`, {
+function apiUrl(path: string, origin?: string) {
+  return "/api/" + path + (origin ? "?" + new URLSearchParams({ workspace: origin }) : "");
+}
+export async function defaultSyncOrigin(): Promise<string> {
+  const response = await fetch("/.well-known/vervetwodo-sync", { cache: "no-store" });
+  if (!response.ok) throw Error("syncError");
+  return (await response.json()).syncOrigin;
+}
+export async function api(path: string, body: unknown = {}, workspace?: string) {
+  const origin = workspace ?? (await read()).syncOrigin;
+  const response = await fetch(apiUrl(path, origin), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
@@ -18,8 +27,11 @@ export async function api(path: string, body: unknown = {}) {
     signal: AbortSignal.timeout(70000),
   });
   if (response.status === 401) throw Error("signIn");
-  if (!response.ok)
+  if (!response.ok) {
+    if (response.status === 400 && (await response.json().catch(() => ({}))).error === "unknownSyncServer")
+      throw Error("unknownSyncServer");
     throw Error(response.status === 429 ? "rateLimited" : "syncError");
+  }
   const result = await response.json();
   if (result.error) throw Error("syncError");
   return result;
@@ -49,18 +61,22 @@ export async function sync() {
     // A cross-tab lock prevents an older response from replacing a newer projection.
     const run = async () => {
       let current = await read();
-      while (current.outbox.length) {
+      if (!current.connected) return;
+      const workspace = current.syncOrigin;
+      while (current.syncOrigin === workspace && current.outbox.length) {
         const ops = batch(current.outbox);
-        const reply = await api("apply", { operations: ops });
+        const reply = await api("apply", { operations: ops }, workspace || "");
         await mutate((d) => {
+          if (d.syncOrigin !== workspace) return;
           const ids = new Set(ops.map((o) => o.id));
           d.outbox = d.outbox.filter((o) => !ids.has(o.id));
           project(d, reply.state.records || []);
         });
         current = await read();
       }
-      const reply = await api("check");
-      await mutate((d) => project(d, reply.state.records || []));
+      if (current.syncOrigin !== workspace) return;
+      const reply = await api("check", {}, workspace || "");
+      await mutate((d) => { if (d.syncOrigin === workspace) project(d, reply.state.records || []); });
       listener(reply.telemetry?.confirmed ? "synced" : "pending");
     };
     if (navigator.locks) await navigator.locks.request("vervetwodo-sync", run);
@@ -77,12 +93,20 @@ export async function sync() {
     busy = false;
   }
 }
-export async function connect(code: string) {
-  await api("login", { code });
-  await mutate((d) => {
-    d.connected = true;
-  });
-  watch();
+export async function connect(code: string, address: string) {
+  let origin: string;
+  try {
+    const url = new URL(address.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash || url.pathname !== "/")
+      throw Error();
+    origin = url.origin;
+  } catch { throw Error("invalidSyncUrl"); }
+  const primary = await defaultSyncOrigin();
+  // Discovery resolves the hosted web URL to its native sync server.
+  const login = await api("login", { code }, origin);
+  origin = login.syncOrigin || (origin === location.origin ? primary : origin);
+  await activateWorkspace(origin, primary);
+  watch(origin);
   await sync();
   const current = await read();
   if (current.preferences.push) await updatePush(current);
@@ -97,9 +121,11 @@ export async function disconnect() {
   });
   listener("local");
 }
-function watch() {
-  if (stream) return;
-  stream = new EventSource("/api/events");
+function watch(origin?: string) {
+  const url = new URL(apiUrl("events", origin), location.href).href;
+  if (stream?.url === url) return;
+  stream?.close();
+  stream = new EventSource(url);
   stream.onmessage = () => void sync();
   stream.addEventListener("ready", () => void sync());
   stream.onerror = () => {
@@ -107,9 +133,12 @@ function watch() {
   };
 }
 export function startSync() {
-  void read().then((d) => {
-    if (d.connected) watch();
+  const refresh = () => void read().then((d) => {
+    if (d.connected) watch(d.syncOrigin);
+    else { stream?.close(); stream = undefined; }
   });
+  refresh();
+  const unsubscribe = subscribe(refresh);
   const online = () => void sync();
   window.addEventListener("online", online);
   const visible = () => {
@@ -120,6 +149,7 @@ export function startSync() {
   return () => {
     stream?.close();
     stream = undefined;
+    unsubscribe();
     window.removeEventListener("online", online);
     document.removeEventListener("visibilitychange", visible);
   };
