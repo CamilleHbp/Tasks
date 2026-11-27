@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/CamilleHbp/VerveTwoDo/sync-engine/mobile"
+	"github.com/CamilleHbp/Tasks/sync-engine/mobile"
 	"path/filepath"
 	"strings"
 	"sync"

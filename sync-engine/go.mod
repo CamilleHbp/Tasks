@@ -2,7 +2,7 @@ module github.com/CamilleHbp/Tasks/sync-engine
 
 go 1.27.0
 
-require github.com/CamilleHbp/sync-core v0.1.1-0.20261101090233-61255d80d884
+require github.com/CamilleHbp/sync-core v0.2.1
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect

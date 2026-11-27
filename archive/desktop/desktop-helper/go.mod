@@ -1,12 +1,12 @@
-module github.com/CamilleHbp/VerveTwoDo/desktop-helper
+module github.com/CamilleHbp/Tasks/desktop-helper
 
 go 1.27.0
 
-require github.com/CamilleHbp/VerveTwoDo/sync-engine v0.0.0
+require github.com/CamilleHbp/Tasks/sync-engine v0.0.0
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
-	github.com/CamilleHbp/sync-core v0.1.1-0.20261101090233-61255d80d884 // indirect
+	github.com/CamilleHbp/sync-core v0.2.1 // indirect
 	github.com/anyproto/any-store v1.0.2 // indirect
 	github.com/anyproto/any-sync v0.13.8 // indirect
 	github.com/anyproto/go-bip39 v1.0.0 // indirect
@@ -90,4 +90,4 @@ require (
 	storj.io/drpc v1.0.0 // indirect
 )
 
-replace github.com/CamilleHbp/VerveTwoDo/sync-engine => ../sync-engine
+replace github.com/CamilleHbp/Tasks/sync-engine => ../../../sync-engine

@@ -37,3 +37,5 @@ Android 主屏幕的近期任务小组件可以单独设置标签和排序方式
 ## 许可与致谢
 
 Tasks 使用 [GPL-3.0-only](LICENSE) 许可证。第三方组件请参阅 [Android 许可声明](app/licences)。上游翻译来自 [VerveDo 翻译项目](https://crowdin.com/project/vervedo)。
+
+[同步库源代码](https://github.com/CamilleHbp/sync-core/tree/v0.2.1)和 [Android 更新程序源代码](https://github.com/CamilleHbp/android-updater/tree/v1.0.5)均采用 Apache 2.0 许可证。

@@ -39,3 +39,5 @@ The web app also has a JSON backup. Import adds tasks with new IDs. See the [web
 ## Credits and license
 
 Tasks uses [GPL-3.0-only](LICENSE). The [Android notices](app/licences) cover bundled components. Shared upstream translations come from the [VerveDo translation project](https://crowdin.com/project/vervedo).
+
+The [sync library](https://github.com/CamilleHbp/sync-core/tree/v0.2.1) and [Android updater](https://github.com/CamilleHbp/android-updater/tree/v1.0.5) are available under Apache 2.0.

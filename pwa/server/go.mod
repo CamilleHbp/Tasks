@@ -6,7 +6,7 @@ require github.com/CamilleHbp/Tasks/sync-engine v0.0.0
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
-	github.com/CamilleHbp/sync-core v0.1.1-0.20261101090233-61255d80d884 // indirect
+	github.com/CamilleHbp/sync-core v0.2.1 // indirect
 	github.com/SherClockHolmes/webpush-go v1.4.0 // indirect
 	github.com/anyproto/any-store v1.0.2 // indirect
 	github.com/anyproto/any-sync v0.13.8 // indirect
