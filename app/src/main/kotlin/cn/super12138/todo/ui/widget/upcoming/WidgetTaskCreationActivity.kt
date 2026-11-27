@@ -1,30 +1,25 @@
 package cn.super12138.todo.ui.widget.upcoming
 
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import cn.super12138.todo.constants.Constants
 import cn.super12138.todo.ui.activities.MainViewModel
 import cn.super12138.todo.ui.pages.editor.TaskEditorPage
 import cn.super12138.todo.ui.theme.VerveDoTheme
 import cn.super12138.todo.utils.configureEdgeToEdge
 import cn.super12138.todo.utils.isDark
-import cn.super12138.todo.utils.updateTaskWidgets
 import com.kyant.m3color.dynamiccolor.ColorSpec
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.ZoneId
 
 /** A separate task lets Save and Back return directly to the originating launcher. */
-class WidgetTaskCreationActivity : ComponentActivity() {
+class WidgetTaskCreationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         configureEdgeToEdge()
@@ -39,6 +34,7 @@ class WidgetTaskCreationActivity : ComponentActivity() {
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
             VerveDoTheme(
+                color = if (appearance.dynamicColor) null else androidx.compose.ui.graphics.Color(appearance.themeColor),
                 darkTheme = appearance.darkMode.isDark(),
                 pureBlackMode = appearance.pureBlackMode,
                 style = appearance.paletteStyle,
@@ -51,18 +47,7 @@ class WidgetTaskCreationActivity : ComponentActivity() {
                     initialCategory = intent.getStringExtra(EXTRA_CATEGORY).orEmpty(),
                     initialDueDateMillis = today,
                     onNavigateUp = { finish() },
-                    onSaved = {
-                        lifecycleScope.launch {
-                            try {
-                                updateTaskWidgets(this@WidgetTaskCreationActivity)
-                            } catch (exception: CancellationException) {
-                                throw exception
-                            } catch (exception: Exception) {
-                                Log.e("WidgetTaskCreation", "Unable to refresh widgets after saving", exception)
-                            }
-                            finish()
-                        }
-                    }
+                    onSaved = { finish() }
                 )
             }
         }

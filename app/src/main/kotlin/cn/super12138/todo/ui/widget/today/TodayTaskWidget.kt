@@ -13,6 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import cn.super12138.todo.ui.widget.VerveDoWidgetTheme
+import cn.super12138.todo.ui.widget.LocalWidgetBackground
 import androidx.glance.GlanceTheme
 import androidx.glance.LocalContext
 import androidx.glance.appwidget.GlanceAppWidget
@@ -21,6 +23,7 @@ import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.LazyListScope
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
+import cn.super12138.todo.ui.widget.LocalizedWidgetContent
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
@@ -40,7 +43,6 @@ import cn.super12138.todo.ui.widget.components.GlanceTitleBar
 import cn.super12138.todo.utils.GlanceTypography
 import cn.super12138.todo.utils.SystemUtils
 import cn.super12138.todo.utils.sort
-import cn.super12138.todo.utils.updateTaskWidgets
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -49,29 +51,35 @@ class TodayTaskWidget : GlanceAppWidget(), KoinComponent {
     val taskRepository: TaskRepository = get()
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val tasks = taskRepository.getAllTasks()
+        val initialTasks = tasks.first()
         val colors = get<TagRepository>().colors
         val initialColors = colors.first()
+        val appearanceFlow = get<cn.super12138.todo.logic.SettingsRepository>().appearanceFlow
+        val initialAppearance = appearanceFlow.first()
         provideContent {
-            val tagColors by colors.collectAsState(initialColors)
-            val scope = rememberCoroutineScope()
-            val allTask by taskRepository.getAllTasks().collectAsState(emptyList())
-            val todayTask = remember(allTask) {
-                allTask
-                    .filter { isDueOn(it.dueDateMillis) }
-                    .sort(SortingMethod.Priority)
-            }
+            LocalizedWidgetContent {
+                val appearance by appearanceFlow.collectAsState(initialAppearance)
+                val tagColors by colors.collectAsState(initialColors)
+                val scope = rememberCoroutineScope()
+                val allTask by tasks.collectAsState(initialTasks)
+                val todayTask = remember(allTask) {
+                    allTask
+                        .filter { isDueOn(it.dueDateMillis) }
+                        .sort(SortingMethod.Priority)
+                }
 
-            GlanceTheme {
-                TodayTaskApp(
-                    tagColors = tagColors,
-                    taskList = todayTask,
-                    onChecked = { task ->
-                        scope.launch {
-                            taskRepository.completeTask(task.id)
-                            updateTaskWidgets(context)
+                VerveDoWidgetTheme(appearance) {
+                    TodayTaskApp(
+                        tagColors = tagColors,
+                        taskList = todayTask,
+                        onChecked = { task ->
+                            scope.launch {
+                                taskRepository.completeTask(task.id)
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
@@ -91,6 +99,7 @@ private fun TodayTaskApp(
     val inCompleteTasks = taskList.filter { !it.isCompleted }
 
     Scaffold(
+        backgroundColor = LocalWidgetBackground.current,
         titleBar = {
             val title = remember(taskList.size) {
                 context.getString(R.string.label_widget_today_task)
@@ -128,7 +137,6 @@ private fun TodayTaskApp(
                     ) {
                         GlanceTaskCard(
                             content = it.content,
-                            category = it.taskTags.joinToString(" · "),
                             tags = it.taskTags,
                             tagColors = tagColors,
                             dueTimeMinutes = it.dueTimeMinutes,
@@ -149,7 +157,6 @@ private fun TodayTaskApp(
                     ) {
                         GlanceTaskCard(
                             content = it.content,
-                            category = it.taskTags.joinToString(" · "),
                             tags = it.taskTags,
                             tagColors = tagColors,
                             dueTimeMinutes = it.dueTimeMinutes,

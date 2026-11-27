@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_attention_title">Vos appareils ont des versions différentes</string>
+    <string name="sync_attention_description">Choisissez la valeur à conserver pour chaque conflit. Les autres champs restent inchangés. Votre choix sera envoyé à vos autres appareils.</string>
+    <string name="sync_remaining">Conflits restants : %1$d</string>
+    <string name="sync_keep">Conserver cette version</string>
+    <string name="sync_choose">Sélectionnez une version pour continuer</string>
+    <string name="sync_source">Depuis %1$s</string>
+    <string name="sync_unknown_device">Appareil inconnu</string>
+    <string name="sync_unnamed">Élément sans titre</string>
+    <string name="sync_failure_title">Vos appareils ne sont peut-être pas synchronisés</string>
+    <string name="sync_failure_hint">Vos modifications sont enregistrées sur cet appareil. Réessayez ou ouvrez les réglages de synchronisation pour vérifier votre connexion.</string>
+    <string name="sync_retry">Réessayer</string>
+    <string name="sync_open_settings">Réglages de synchronisation</string>
+    <string name="sync_waiting">Envoi de vos modifications…</string>
+    <string name="sync_pending_hint">Certaines modifications ne sont pas encore parvenues à vos autres appareils.</string>
+    <string name="sync_changed">Cet élément a changé sur un autre appareil. Vérifiez les versions actuelles et réessayez.</string>
+    <string name="sync_completed">Terminée</string>
+    <string name="sync_todo">À faire</string>
+    <string name="sync_deleted">Supprimer cet élément</string>
+    <string name="sync_kept">Conserver cet élément</string>
+    <string name="sync_enabled">Activé</string>
+    <string name="sync_disabled">Désactivé</string>
+    <string name="sync_priority0">Aucune priorité</string>
+    <string name="sync_priority1">Basse</string>
+    <string name="sync_priority2">Moyenne</string>
+    <string name="sync_priority3">Haute</string>
+    <string name="sync_priority4">Urgente</string>
+    <string name="sync_frequency_daily">jour(s)</string>
+    <string name="sync_frequency_weekly">semaine(s)</string>
+    <string name="sync_frequency_monthly">mois</string>
+    <string name="sync_frequency_yearly">an(s)</string>
+    <string name="sync_field_icon">Icône</string>
+</resources>

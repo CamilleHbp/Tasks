@@ -19,7 +19,6 @@ import cn.super12138.todo.ui.pages.settings.SettingsAboutLicence
 import cn.super12138.todo.ui.pages.settings.SettingsAppearance
 import cn.super12138.todo.ui.pages.settings.SettingsAppearanceDarkMode
 import cn.super12138.todo.ui.pages.settings.SettingsData
-import cn.super12138.todo.ui.pages.settings.SettingsDataCategory
 import cn.super12138.todo.ui.pages.settings.SettingsDeveloperOptions
 import cn.super12138.todo.ui.pages.settings.SettingsDeveloperOptionsPadding
 import cn.super12138.todo.ui.pages.settings.SettingsInterface
@@ -85,24 +84,47 @@ fun TopNavigation(
             ),
             entryProvider = entryProvider {
                 entry<VerveDoScreen.Overview> {
-                    OverviewPage(
-                        toTaskAddPage = { backStack.add(VerveDoScreen.Editor.Add) },
-                        toTaskViewPage = { backStack.add(VerveDoScreen.TaskDetail(it.id)) },
-                        toTaskEditPage = { backStack.add(VerveDoScreen.Editor.Edit(it)) }
+                    cn.super12138.todo.ui.pages.collections.TaskCollectionPage(
+                        mode = cn.super12138.todo.logic.model.TaskViewMode.Agenda,
+                        toAdd = { backStack.add(VerveDoScreen.Editor.Add()) },
+                        toDetail = { backStack.add(VerveDoScreen.TaskDetail(it.id)) },
+                        toEdit = { backStack.add(VerveDoScreen.Editor.Edit(it)) },
+                        toSettings = { backStack.add(VerveDoScreen.Settings.Main) }
                     )
                 }
-
                 entry<VerveDoScreen.Tasks> {
-                    TasksPage(
-                        toTaskAddPage = { backStack.add(VerveDoScreen.Editor.Add) },
-                        toTaskViewPage = { backStack.add(VerveDoScreen.TaskDetail(it.id)) },
-                        toTaskEditPage = { backStack.add(VerveDoScreen.Editor.Edit(it)) },
-                        toTagManager = { backStack.add(VerveDoScreen.Settings.DataCategory) }
+                    cn.super12138.todo.ui.pages.collections.TagCloudPage(
+                        toTasks = { tag ->
+                            backStack.add(VerveDoScreen.TaskCollection(
+                                cn.super12138.todo.logic.model.TaskViewConfig(
+                                    mode = cn.super12138.todo.logic.model.TaskViewMode.Tags,
+                                    status = cn.super12138.todo.logic.model.TaskStatusFilter.All,
+                                    tags = setOf(tag)
+                                ).encode(), tagScope = tag
+                            ))
+                        },
+                        toSettings = { backStack.add(VerveDoScreen.Settings.Main) }
+                    )
+                }
+                entry<VerveDoScreen.TaskCollection> { args ->
+                    cn.super12138.todo.ui.pages.collections.TaskCollectionPage(
+                        mode = cn.super12138.todo.logic.model.TaskViewConfig.decode(args.configuration).mode,
+                        initialConfiguration = args.configuration,
+                        tagScope = args.tagScope,
+                        toAdjacentTag = if (args.tagScope != null) ({ tag ->
+                            backStack.replaceTop(VerveDoScreen.TaskCollection(
+                                cn.super12138.todo.logic.model.TaskViewConfig.decode(args.configuration).copy(tags = setOf(tag)).encode(), tag))
+                        }) else null,
+                        onBack = ::onBack,
+                        toAdd = { backStack.add(VerveDoScreen.Editor.Add(initialTag = args.tagScope.orEmpty())) },
+                        toDetail = { backStack.add(VerveDoScreen.TaskDetail(it.id)) },
+                        toEdit = { backStack.add(VerveDoScreen.Editor.Edit(it)) },
+                        toSettings = { backStack.add(VerveDoScreen.Settings.Main) }
                     )
                 }
 
-                entry<VerveDoScreen.Editor.Add>(metadata = editorTransition()) {
-                    TaskAddPage(onNavigateUp = ::onBack)
+                entry<VerveDoScreen.Editor.Add>(metadata = editorTransition()) { args ->
+                    TaskAddPage(onNavigateUp = ::onBack, initialTag = args.initialTag)
                 }
 
                 entry<VerveDoScreen.TaskDetail>(metadata = settingsTransition()) { args ->
@@ -122,6 +144,7 @@ fun TopNavigation(
 
                 entry<VerveDoScreen.Settings.Main> {
                     SettingsMain(
+                        onBack = ::onBack,
                         toAppearancePage = { backStack.add(VerveDoScreen.Settings.Appearance) },
                         toAboutPage = { backStack.add(VerveDoScreen.Settings.About) },
                         toInterfacePage = { backStack.add(VerveDoScreen.Settings.Interface) },
@@ -146,13 +169,8 @@ fun TopNavigation(
 
                 entry<VerveDoScreen.Settings.Data>(metadata = settingsTransition()) {
                     SettingsData(
-                        toCategoryManager = { backStack.add(VerveDoScreen.Settings.DataCategory) },
                         onNavigateUp = ::onBack
                     )
-                }
-
-                entry<VerveDoScreen.Settings.DataCategory>(metadata = settingsTransition()) {
-                    SettingsDataCategory(onNavigateUp = ::onBack)
                 }
 
                 entry<VerveDoScreen.Settings.About>(metadata = settingsTransition()) {

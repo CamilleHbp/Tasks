@@ -8,9 +8,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
 
-enum class UpcomingTaskSort {
-    DueDate, DueDateLatest, CreatedNewest, CreatedOldest, Priority, Alphabetical
-}
+typealias UpcomingTaskSort = cn.super12138.todo.logic.model.TaskGroupSort
 
 enum class UpcomingSortField { DueDate, CreationDate, Priority, Alphabetical }
 

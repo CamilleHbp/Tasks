@@ -46,6 +46,7 @@ import com.kyant.m3color.dynamiccolor.ColorSpec
 @Composable
 fun PaletteItem(
     isDynamicColor: Boolean,
+    themeColor: Int = cn.super12138.todo.logic.model.DEFAULT_THEME_COLOR,
     isDark: Boolean,
     pureBlackMode: Boolean,
     paletteStyle: PaletteStyle,
@@ -64,7 +65,7 @@ fun PaletteItem(
     val animatedShape =
         shapeByInteraction(shapes, pressed, VerveDoDefaults.shapesDefaultAnimationSpec)
     val colorScheme = rememberDynamicColorScheme(
-        keyColor = isDynamicColor.keyColorBasedOnDynamicColor(),
+        keyColor = if (isDynamicColor) true.keyColorBasedOnDynamicColor() else androidx.compose.ui.graphics.Color(themeColor),
         isDark = isDark,
         contrastLevel = contrastLevel.value.toDouble(),
         pureBlack = pureBlackMode,

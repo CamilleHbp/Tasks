@@ -1,6 +1,12 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="task_view_title">View Task</string>
     <string name="task_edit">Edit</string>
+    <string name="task_detail_edit">Edit task</string>
+    <string name="task_status_todo">To do</string>
+    <string name="task_status_completed">Completed</string>
+    <string name="task_detail_date_time">%1$s at %2$s</string>
+    <string name="task_detail_overdue">Overdue · %1$s</string>
+    <string name="task_detail_due_accessibility">Due %1$s</string>
     <string name="task_details_heading">Details</string>
     <string name="task_subtasks">Subtasks</string>
     <string name="task_subtask_label">Subtask %1$d</string>

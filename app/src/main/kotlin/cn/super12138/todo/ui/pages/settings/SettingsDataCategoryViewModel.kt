@@ -20,15 +20,15 @@ class SettingsDataCategoryViewModel(
 ) : ViewModel() {
     private val localUiState = MutableStateFlow(SettingsDataCategoryUiState())
     val uiState: StateFlow<SettingsDataCategoryUiState> = combine(
-        tagRepository.tags, tagRepository.colors, tagRepository.usageCounts, localUiState
-    ) { tags, colors, counts, local ->
-        local.copy(categories = tags, tagColors = colors, usageCounts = counts)
+        tagRepository.tags, tagRepository.colors, tagRepository.usageCounts, tagRepository.icons, localUiState
+    ) { tags, colors, counts, icons, local ->
+        local.copy(categories = tags, tagColors = colors, tagIcons = icons, usageCounts = counts)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsDataCategoryUiState())
 
     fun clearError() = localUiState.update { it.copy(error = null) }
 
-    fun saveTag(old: String?, name: String, color: Int, onSaved: () -> Unit) =
-        mutate(old, onSaved) { tagRepository.save(old, name, color) }
+    fun saveTag(old: String?, name: String, color: Int, icon: String? = null, onSaved: () -> Unit) =
+        mutate(old, onSaved) { tagRepository.save(old, name, color, icon) }
 
     fun deleteTag(tag: String, onDeleted: () -> Unit) =
         mutate(tag, onDeleted) { tagRepository.delete(tag); null }

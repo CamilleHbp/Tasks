@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+ xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+ xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+ xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+ xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+ IgnorableNamespaces="uap uap3 com rescap">
+ <Identity Name="studio.camille.vervetwodo.preview" Publisher="CN=VerveTwoDo Personal" Version="1.0.0.0" ProcessorArchitecture="x64" />
+ <Properties><DisplayName>VerveTwoDo</DisplayName><PublisherDisplayName>Camille</PublisherDisplayName><Logo>Assets\Logo.png</Logo></Properties>
+ <Resources><Resource Language="en-us"/><Resource Language="fr-fr"/></Resources>
+ <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0"/></Dependencies>
+ <Applications>
+  <Application Id="App" Executable="Desktop\VerveTwoDo.exe" EntryPoint="Windows.FullTrustApplication">
+   <uap:VisualElements DisplayName="VerveTwoDo" Description="VerveTwoDo" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" BackgroundColor="transparent"/>
+   <Extensions>
+    <uap:Extension Category="windows.protocol"><uap:Protocol Name="vervetwodo-preview"><uap:DisplayName>VerveTwoDo</uap:DisplayName></uap:Protocol></uap:Extension>
+    <com:Extension Category="windows.comServer"><com:ComServer>
+     <com:ExeServer Executable="Desktop\app\resources\VerveWidgets\VerveWidgets.exe" DisplayName="VerveTwoDo Widgets">
+      <com:Class Id="56F0B272-F86A-45B1-A536-E8FC833F2017" DisplayName="VerveTwoDo Widgets"/>
+     </com:ExeServer>
+    </com:ComServer></com:Extension>
+    <uap3:Extension Category="windows.appExtension">
+     <uap3:AppExtension Name="com.microsoft.windows.widgets" DisplayName="VerveTwoDo" Id="VerveTasks" PublicFolder="Public">
+      <uap3:Properties><WidgetProvider>
+       <ProviderIcons><Icon Path="Assets\SmallLogo.png"/></ProviderIcons>
+       <Activation><CreateInstance ClassId="56F0B272-F86A-45B1-A536-E8FC833F2017"/></Activation>
+       <Definitions><Definition Id="VerveTasks" DisplayName="VerveTwoDo" Description="VerveTwoDo" AllowMultiple="true">
+        <Capabilities><Capability><Size Name="small"/></Capability><Capability><Size Name="medium"/></Capability><Capability><Size Name="large"/></Capability></Capabilities>
+        <ThemeResources><Icons><Icon Path="Assets\SmallLogo.png"/></Icons><Screenshots><Screenshot Path="Assets\Logo.png" DisplayAltText="VerveTwoDo"/></Screenshots></ThemeResources>
+       </Definition></Definitions>
+      </WidgetProvider></uap3:Properties>
+     </uap3:AppExtension>
+    </uap3:Extension>
+   </Extensions>
+  </Application>
+ </Applications>
+ <Capabilities><rescap:Capability Name="runFullTrust"/></Capabilities>
+</Package>

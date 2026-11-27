@@ -45,8 +45,7 @@ fun TasksTopAppBar(
     onSelectAll: () -> Unit,
     onExitSelectMode: () -> Unit,
     onDeleteSelectedTask: () -> Unit,
-    modifier: Modifier = Modifier,
-    onManageTags: (() -> Unit)? = null
+    modifier: Modifier = Modifier
 ) {
     val navIconEnterTransition = fadeIn(
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()
@@ -153,9 +152,6 @@ fun TasksTopAppBar(
                         }
 
                         else -> Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (onManageTags != null) IconButton(onClick = onManageTags) {
-                                Icon(painterResource(R.drawable.ic_category), stringResource(R.string.tag_manage))
-                            }
                             val selectLabel = stringResource(R.string.task_select_accessibility)
                             TextButton(onClick = onEnterSelectMode,
                                 modifier = Modifier.semantics { contentDescription = selectLabel }) {

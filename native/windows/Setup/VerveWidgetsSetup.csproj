@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- .NET Framework 4.8 ships with Windows 10 and 11, so the installer needs no runtime of its own. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>VerveTwoDoWidgetsSetup</AssemblyName>
+    <RootNamespace>Setup</RootNamespace>
+    <ApplicationIcon>..\Companion\Assets\App.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <EmbeddedResource Include="Strings/*.txt" LogicalName="Setup.Strings.%(Filename)%(Extension)" />
+    <!-- Payload: the signed MSIX and its public certificate, zipped by scripts/build-widgets-windows.py. -->
+    <EmbeddedResource Include="$(Payload)" LogicalName="payload.zip" Condition="'$(Payload)' != ''" />
+  </ItemGroup>
+</Project>

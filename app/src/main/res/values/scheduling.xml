@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scheduling_title">Dates and times</string>
+    <string name="scheduling_time_picker">Default time picker</string>
+    <string name="scheduling_date_picker">Default date picker</string>
+    <string name="scheduling_clock">Clock dial</string>
+    <string name="scheduling_keyboard">Keyboard</string>
+    <string name="scheduling_calendar">Calendar</string>
+    <string name="scheduling_week_start">First day of the week</string>
+    <string name="scheduling_follow_system">Follow app language</string>
+    <string name="scheduling_week_start_hint">Used by calendars, weekly task groups, and Next week. Next week selects the first day of the following week.</string>
+</resources>

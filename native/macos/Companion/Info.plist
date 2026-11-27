@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>studio.camille.vervetwodo.widgets</string>
+<key>CFBundleExecutable</key><string>VerveTwoDoWidgets</string>
+<key>CFBundleName</key><string>Tasks Widgets</string>
+<key>CFBundleDisplayName</key><string>Tasks Widgets</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleVersion</key><string>111</string>
+<key>CFBundleShortVersionString</key><string>1.0.11</string>
+<key>CFBundleDevelopmentRegion</key><string>en</string>
+<key>CFBundleLocalizations</key><array><string>en</string><string>fr</string></array>
+<key>CFBundleAllowMixedLocalizations</key><true/>
+<key>LSMinimumSystemVersion</key><string>14.0</string>
+<key>LSUIElement</key><true/>
+<key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+<key>NSHighResolutionCapable</key><true/>
+<key>CFBundleURLTypes</key><array><dict>
+<key>CFBundleURLName</key><string>studio.camille.vervetwodo.widgets</string>
+<key>CFBundleURLSchemes</key><array><string>vervetwodo-widgets</string></array>
+</dict></array>
+</dict></plist>

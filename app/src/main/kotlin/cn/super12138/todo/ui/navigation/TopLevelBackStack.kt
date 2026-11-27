@@ -52,7 +52,23 @@ class TopLevelBackStack<T : Any>(startKey: T) {
         updateBackStack()
     }
 
+    /** Open an external destination without restoring an older detail or editor above it. */
+    fun resetTopLevel(key: T) {
+        topLevelStacks.remove(key)
+        topLevelStacks[key] = mutableStateListOf(key)
+        topLevelKey = key
+        updateBackStack()
+    }
+
+    fun replaceTop(key: T) {
+        val stack = topLevelStacks[topLevelKey] ?: return
+        if (stack.size > 1) stack[stack.lastIndex] = key else stack.add(key)
+        updateBackStack()
+    }
+
     fun removeLast() {
+        if (backStack.size <= 1) return
+
         val removedKey = topLevelStacks[topLevelKey]?.removeLastOrNull()
         // If the removed key was a top level key, remove the associated top level stack
         topLevelStacks.remove(removedKey)

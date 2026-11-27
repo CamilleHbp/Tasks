@@ -33,7 +33,7 @@ fun parseTagColor(hex: String): Int? = hex.removePrefix("#")
 fun tagColorHex(color: Int): String = "#%06X".format(color and 0xFFFFFF)
 
 @Composable
-fun TagColorPicker(hex: String, enabled: Boolean = true, onChange: (String) -> Unit) {
+fun TagColorPicker(hex: String, enabled: Boolean = true, label: String = stringResource(R.string.tag_color), onChange: (String) -> Unit) {
     val selectedColor = parseTagColor(hex)
     val initialColor = remember { Color(selectedColor ?: tagColorPalette.first()) }
     val controller = rememberColorPickerController()
@@ -79,7 +79,7 @@ fun TagColorPicker(hex: String, enabled: Boolean = true, onChange: (String) -> U
         OutlinedTextField(
             value = hex, onValueChange = onChange, enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.tag_color)) },
+            label = { Text(label) },
             leadingIcon = {
                 Box(Modifier.size(24.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
                     .background(Color(selectedColor ?: initialColor.toArgb()), CircleShape))

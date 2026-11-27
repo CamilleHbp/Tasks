@@ -7,6 +7,7 @@ This portable bundle does not register the Windows Widgets provider.
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import struct
@@ -34,7 +35,7 @@ def inputs():
     for directory in ('desktopApp', 'desktopIntegration', 'shared', 'desktop-helper', 'sync-engine', 'native/windows', 'gradle'):
         files.extend(p for p in (ROOT / directory).rglob('*') if p.is_file()
                      and not set(p.relative_to(ROOT / directory).parts) & {'build', 'bin', 'obj', '.gradle'}
-                     and p.suffix in {'.kt', '.kts', '.properties', '.go', '.mod', '.sum', '.cs', '.csproj', '.json', '.toml', '.appxmanifest'})
+                     and p.suffix in {'.kt', '.kts', '.properties', '.go', '.mod', '.sum', '.cs', '.csproj', '.json', '.toml', '.appxmanifest', '.png', '.svg', '.xml'})
     files.extend(ROOT.glob('*.kts'))
     files.append(Path(__file__))
     return {str(p.relative_to(ROOT)): sha(p) for p in sorted(set(files))}
@@ -54,6 +55,7 @@ def verify_pe(path):
 
 def main():
     before = inputs()
+    version = re.search(r'packageVersion = "([^"]+)"', (ROOT / "desktopApp/build.gradle.kts").read_text()).group(1)
     OUTPUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='windows-', dir=OUTPUT) as temporary:
         stage = Path(temporary)
@@ -99,7 +101,7 @@ gradle.projectsEvaluated {
         assert list(libs.glob('skiko-awt-runtime-windows-x64-*.jar'))
         run('go', 'test', './...', cwd=ROOT / 'desktop-helper',
             env=dict(os.environ, GOWORK='off', GOPRIVATE='github.com/CamilleHbp/sync-core'))
-        run('go', 'build', '-trimpath', '-o', resources / 'vervetwodo-helper.exe', '.',
+        run('go', 'build', '-trimpath', '-ldflags=-s -w', '-o', resources / 'vervetwodo-helper.exe', '.',
             cwd=ROOT / 'desktop-helper', env=dict(os.environ, GOOS='windows', GOARCH='amd64', CGO_ENABLED='0', GOWORK='off', GOPRIVATE='github.com/CamilleHbp/sync-core'))
         # This project has one SDK-generated manifest and no user manifest to merge.
         # Keep the generated registration XML intact and let the C# compiler embed it.
@@ -111,8 +113,10 @@ gradle.projectsEvaluated {
         run('dotnet', 'publish', ROOT / 'native/windows/VerveWidgets/VerveWidgets.csproj',
             '-c', 'Release', '-r', 'win-x64', '-p:ManifestTool=' + str(manifest),
             '-p:AppxGeneratePriEnabled=false', '-o', native)
-        assert (native / 'Microsoft.UI.pri').is_file()
         assert (native / 'Microsoft.WindowsAppRuntime.dll').is_file()
+        assert (native / 'Microsoft.Windows.Widgets.dll').is_file()
+        for unused in ('DirectML.dll', 'onnxruntime.dll', 'Microsoft.ui.xaml.dll'):
+            assert not (native / unused).exists(), f'Unused SDK component was bundled: {unused}'
         launcher = stage / 'launcher.go'
         launcher.write_text(r"""package main
 import ("os"; "os/exec"; "path/filepath"; "syscall"; "unsafe")
@@ -120,7 +124,7 @@ func main() {
     executable, err := os.Executable()
     if err != nil { panic(err) }
     root := filepath.Dir(executable)
-    args := []string{"-Dcompose.application.resources.dir=" + filepath.Join(root,"app","resources"), "-Dcompose.application.configure.swing.globals=true", "-Djpackage.app-version=1.0.0", "-cp", filepath.Join(root,"app","*"), "studio.camille.vervetwodo.desktop.MainKt"}
+    args := []string{"-Dcompose.application.resources.dir=" + filepath.Join(root,"app","resources"), "-Dcompose.application.configure.swing.globals=true", "-Djpackage.app-version=__APP_VERSION__", "-cp", filepath.Join(root,"app","*"), "studio.camille.vervetwodo.desktop.MainKt"}
     args = append(args, os.Args[1:]...)
     command := exec.Command(filepath.Join(root,"runtime","bin","javaw.exe"),args...)
     command.Dir = root
@@ -132,8 +136,8 @@ func main() {
     }
     command.Process.Release()
 }
-""")
-        run('go', 'build', '-trimpath', '-ldflags=-H=windowsgui', '-o', bundle / 'VerveTwoDo.exe', launcher,
+""".replace("__APP_VERSION__", version))
+        run('go', 'build', '-trimpath', '-ldflags=-s -w -H=windowsgui', '-o', bundle / 'VerveTwoDo.exe', launcher,
             env=dict(os.environ, GOOS='windows', GOARCH='amd64', CGO_ENABLED='0', GOWORK='off'))
         archive = OUTPUT / 'temurin-windows-jre.zip'
         if not archive.exists() or sha(archive) != JRE_SHA256:
@@ -153,8 +157,8 @@ func main() {
             if licence.is_file(): shutil.copy2(licence, bundle / licence.name)
         if inputs() != before:
             raise RuntimeError('Desktop build inputs changed during packaging; rebuild before publication')
-        result = OUTPUT / 'VerveTwoDo-1.0.0-windows-x64.zip'
-        with zipfile.ZipFile(result, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as destination:
+        result = OUTPUT / f'vervetwodo-{version}-windows-x64.zip'
+        with zipfile.ZipFile(result, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as destination:
             for path in sorted(bundle.rglob('*')):
                 if path.is_file() and path.suffix != '.pdb':
                     destination.write(path, Path('VerveTwoDo') / path.relative_to(bundle))

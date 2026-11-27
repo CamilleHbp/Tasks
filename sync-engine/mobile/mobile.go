@@ -4,7 +4,7 @@ package mobile
 import (
 	"context"
 	"encoding/json"
-	"github.com/CamilleHbp/VerveTwoDo/sync-engine/tasks"
+	"github.com/CamilleHbp/Tasks/sync-engine/tasks"
 	core "github.com/CamilleHbp/sync-core"
 	"github.com/CamilleHbp/sync-core/appclient"
 	"log"

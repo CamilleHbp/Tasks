@@ -7,7 +7,7 @@ import cn.super12138.todo.constants.Constants
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Entity(tableName = Constants.DB_TABLE_NAME)
+@Entity(tableName = Constants.DB_TABLE_NAME, indices = [androidx.room3.Index(value = ["sync_id"], unique = true)])
 data class TaskEntity(
     @ColumnInfo(name = "content") val content: String,
     @ColumnInfo(name = "category") val category: String = "",
@@ -20,6 +20,15 @@ data class TaskEntity(
     @ColumnInfo(name = "tags", defaultValue = "'[]'") val tags: List<String> = emptyList(),
     @ColumnInfo(name = "due_time") val dueTimeMinutes: Int? = null,
     @ColumnInfo(name = "subtasks", defaultValue = "'[]'") val subtasks: List<Subtask> = emptyList(),
+    @ColumnInfo(name = "rollover", defaultValue = "0") val rollover: Boolean = false,
+    @ColumnInfo(name = "recurrence") val recurrence: String? = null,
+    @ColumnInfo(name = "recurrence_parent_id") val recurrenceParentId: Int? = null,
+    @ColumnInfo(name = "sync_id", defaultValue = "''") val syncId: String = java.util.UUID.randomUUID().toString(),
+    @ColumnInfo(name = "calendar_date", defaultValue = "''") val calendarDate: String = "",
+    @ColumnInfo(name = "time_zone", defaultValue = "''") val timeZone: String = "",
+    @ColumnInfo(name = "sync_parent", defaultValue = "''") val syncParent: String = "",
+    @ColumnInfo(name = "sync_deleted", defaultValue = "0") val syncDeleted: Boolean = false,
+    @ColumnInfo(name = "sync_retracted", defaultValue = "0") val syncRetracted: Boolean = false,
 )
 
 /** Old backups and navigation entries still carry their single category. */

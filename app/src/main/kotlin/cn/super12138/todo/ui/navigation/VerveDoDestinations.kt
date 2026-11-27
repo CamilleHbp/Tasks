@@ -11,23 +11,16 @@ enum class VerveDoDestinations(
     @param:DrawableRes val icon: Int,
     @param:DrawableRes val selectedIcon: Int
 ) {
-    Overview(
+    Agenda(
         route = VerveDoScreen.Overview,
-        label = R.string.page_overview,
-        icon = R.drawable.ic_dashboard,
-        selectedIcon = R.drawable.ic_dashboard_filled
+        label = R.string.view_agenda,
+        icon = R.drawable.ic_agenda,
+        selectedIcon = R.drawable.ic_agenda
     ),
-    Tasks(
+    Tags(
         route = VerveDoScreen.Tasks,
-        label = R.string.page_tasks,
-        icon = R.drawable.ic_ballot,
-        selectedIcon = R.drawable.ic_ballot_filled
-    ),
-    Settings(
-        route = VerveDoScreen.Settings.Main,
-        label = R.string.page_settings,
-        icon = R.drawable.ic_settings,
-        selectedIcon = R.drawable.ic_settings_filled
+        label = R.string.view_tags,
+        icon = R.drawable.ic_tags,
+        selectedIcon = R.drawable.ic_tags
     )
 }
-

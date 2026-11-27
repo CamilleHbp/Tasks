@@ -7,28 +7,12 @@ import cn.super12138.todo.logic.model.ContrastLevel
 import cn.super12138.todo.logic.model.PaletteStyle
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsAppearanceViewModel(private val settingsRepository: SettingsRepository) :
     ViewModel() {
-    // 把整体Ui状态流拆成3个小流以保证类型安全
-    val appearanceUiState: StateFlow<SettingsAppearanceUiState> = combine(
-        settingsRepository.dynamicColorFlow,
-        settingsRepository.paletteStyleFlow,
-        settingsRepository.darkModeFlow,
-        settingsRepository.pureBlackFlow,
-        settingsRepository.contrastLevelFlow,
-    ) { dynamicColor, paletteStyle, darkMode, pureBlackMode, contrastLevel ->
-        SettingsAppearanceUiState(
-            dynamicColor = dynamicColor,
-            paletteStyle = paletteStyle,
-            darkMode = darkMode,
-            pureBlackMode = pureBlackMode,
-            contrastLevel = contrastLevel
-        )
-    }.stateIn(
+    val appearanceUiState: StateFlow<SettingsAppearanceUiState> = settingsRepository.appearanceFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = SettingsAppearanceUiState()
@@ -41,6 +25,14 @@ class SettingsAppearanceViewModel(private val settingsRepository: SettingsReposi
         viewModelScope.launch {
             settingsRepository.setDynamicColor(value)
         }
+    }
+
+    fun setThemeColor(color: Int) {
+        viewModelScope.launch { settingsRepository.setThemeColor(color) }
+    }
+
+    fun setWidgetTransparency(percent: Int) {
+        viewModelScope.launch { settingsRepository.setWidgetTransparency(percent) }
     }
 
     fun setPaletteStyle(paletteStyle: PaletteStyle) {

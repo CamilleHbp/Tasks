@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">색상환</string>
     <string name="tag_color_brightness">밝기</string>
-    <string name="tag_manage">태그 관리</string>
-    <string name="tag_manage_description">모든 작업에서 태그 이름과 색상을 변경하거나 태그를 삭제합니다.</string>
     <string name="tag_edit">태그 편집</string>
     <string name="tag_edit_named">%1$s 태그 편집</string>
     <string name="tag_create">새 태그</string>

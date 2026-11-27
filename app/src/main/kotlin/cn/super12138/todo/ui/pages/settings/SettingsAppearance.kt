@@ -15,6 +15,8 @@ import cn.super12138.todo.ui.pages.settings.components.SettingsItem
 import cn.super12138.todo.ui.pages.settings.components.SwitchSettingsItem
 import cn.super12138.todo.ui.pages.settings.components.appearance.contrast.ContrastPicker
 import cn.super12138.todo.ui.pages.settings.components.appearance.palette.PalettePicker
+import cn.super12138.todo.ui.pages.settings.components.appearance.AccentColorPicker
+import cn.super12138.todo.ui.pages.settings.components.appearance.WidgetTransparencyPicker
 import com.kyant.m3color.dynamiccolor.ColorSpec
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -59,11 +61,16 @@ fun SettingsAppearance(
                 )
             }
 
+            item(key = "accent") {
+                AccentColorPicker(uiState, viewModel::setThemeColor)
+            }
+
             item(key = 3) {
                 PalettePicker(
                     currentPalette = uiState.paletteStyle,
                     onPaletteChange = { viewModel.setPaletteStyle(it) },
                     isDynamicColor = uiState.dynamicColor,
+                    themeColor = uiState.themeColor,
                     darkMode = uiState.darkMode,
                     pureBlackMode = uiState.pureBlackMode,
                     contrastLevel = uiState.contrastLevel,
@@ -76,6 +83,10 @@ fun SettingsAppearance(
                     currentContrast = uiState.contrastLevel,
                     onContrastChange = { viewModel.setContrastLevel(it) }
                 )
+            }
+
+            item(key = "widget_transparency") {
+                WidgetTransparencyPicker(uiState.widgetTransparency, viewModel::setWidgetTransparency)
             }
 
             item(key = 5) {

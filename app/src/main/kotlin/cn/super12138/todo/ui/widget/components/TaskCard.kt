@@ -37,7 +37,6 @@ import cn.super12138.todo.utils.toRelativeTimeString
 @Composable
 fun GlanceTaskCard(
     content: String,
-    category: String,
     isCompleted: Boolean,
     priority: Priority,
     dueDateMillis: Long?,
@@ -58,10 +57,12 @@ fun GlanceTaskCard(
             .padding(vertical = VerveDoDefaults.contentPadding / 2)
     ) {
         if (!isCompleted) {
-            CheckButton(onCheckedAction = onCheckedAction, onChecked = onChecked)
+            Box(GlanceModifier.size(48.dp).clickable(onCheckedAction ?: action(block = onChecked)), contentAlignment = Alignment.Center) {
+                val colors = cn.super12138.todo.logic.assignTagColors(tags, tagColors)
+                GlanceCategoryRing(tags.map { colors.getValue(it) }, LocalContext.current.getString(R.string.widget_complete_task, content))
+            }
             Spacer(GlanceModifier.size(8.dp))
         }
-        TagColorStrokes(tags, tagColors)
         if (dueTimeMinutes != null) {
             Text(cn.super12138.todo.logic.formatDueTime(dueTimeMinutes),
                 style = GlanceTypography.labelMedium.copy(color = GlanceTheme.colors.onSurfaceVariant),
@@ -77,21 +78,6 @@ fun GlanceTaskCard(
                 maxLines = 1
             )
             if (!isCompleted) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = GlanceModifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = category,
-                        style = GlanceTypography.labelMedium.copy(
-                            color = GlanceTheme.colors.onSurfaceVariant
-                        ),
-                        maxLines = 1,
-                        modifier = GlanceModifier.defaultWeight()
-                    )
-                    Spacer(GlanceModifier.size(VerveDoDefaults.contentPadding))
-                    GlancePriorityIcon(priority)
-                }
                 if (showDueDate) {
                     dueDateMillis?.let {
                         DueDatePresenter(
@@ -103,7 +89,10 @@ fun GlanceTaskCard(
                 }
             }
         }
-
+        if (!isCompleted && priority != Priority.Default) {
+            GlancePriorityIcon(priority, modifier = GlanceModifier.padding(start = 8.dp))
+        }
+        Box(GlanceModifier.padding(start = 8.dp)) { GlanceCategoryIcons(tags) }
     }
 }
 
@@ -115,9 +104,9 @@ fun DueDatePresenter(
 ) {
     val context = LocalContext.current
 
-    val dueDate = remember(dueDateMillis) { dueDateMillis.toLocalDateString() }
-    val relativeDueDate = remember(dueDateMillis) { dueDateMillis.toRelativeTimeString(context) }
-    val combinedText = remember(dueDateMillis) {
+    val dueDate = remember(dueDateMillis, context) { dueDateMillis.toLocalDateString() }
+    val relativeDueDate = remember(dueDateMillis, context) { dueDateMillis.toRelativeTimeString(context) }
+    val combinedText = remember(dueDateMillis, context) {
         context.getString(R.string.label_slot_date_with_relative, dueDate, relativeDueDate)
     }
 

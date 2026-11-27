@@ -19,6 +19,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import cn.super12138.todo.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import cn.super12138.todo.utils.VibrationUtils
@@ -50,19 +52,21 @@ fun SettingsDeveloperOptionsPadding(
                 SelectionContainer {
                     Column {
                         DisableSelection {
-                            Text("Direction: Left Top Right Bottom\n")
+                            Text(stringResource(R.string.debug_inset_direction))
                         }
-                        Text("Gestures Padding: \n${WindowInsets.safeGestures}\n")
-                        Text("Drawing Padding: \n${WindowInsets.safeDrawing}\n")
-                        Text("Caption Bar: ${WindowInsets.isCaptionBarVisible}, ${WindowInsets.captionBar}")
-                        Text("Navigation Bar: ${WindowInsets.navigationBars}")
+                        Text(stringResource(R.string.debug_gestures_padding, WindowInsets.safeGestures))
+                        Text(stringResource(R.string.debug_drawing_padding, WindowInsets.safeDrawing))
+                        Text(stringResource(R.string.debug_caption_bar,
+                            stringResource(if (WindowInsets.isCaptionBarVisible) R.string.label_visible else R.string.label_hidden),
+                            WindowInsets.captionBar))
+                        Text(stringResource(R.string.debug_navigation_bar, WindowInsets.navigationBars))
                         DisableSelection {
                             Button(
                                 onClick = {
                                     VibrationUtils.performHapticFeedback(view)
                                     onNavigateUp()
                                 }
-                            ) { Text("Back") }
+                            ) { Text(stringResource(R.string.action_back)) }
                         }
                     }
                 }

@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">عجلة الألوان</string>
     <string name="tag_color_brightness">السطوع</string>
-    <string name="tag_manage">إدارة الوسوم</string>
-    <string name="tag_manage_description">أعد تسمية الوسوم أو غيّر ألوانها أو احذفها من جميع المهام.</string>
     <string name="tag_edit">تعديل الوسم</string>
     <string name="tag_edit_named">تعديل الوسم %1$s</string>
     <string name="tag_create">وسم جديد</string>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_schedule">Planification</string>
+    <string name="editor_no_tags">Aucune étiquette</string>
+    <string name="editor_add_details">Ajouter des détails</string>
+    <string name="editor_expand_details">Afficher tous les détails</string>
+    <string name="editor_collapse_details">Réduire les détails</string>
+    <string name="editor_add_item">Ajouter une étape</string>
+    <string name="editor_subtask_removed">Sous-tâche supprimée</string>
+    <string name="editor_subtasks_added">Sous-tâches ajoutées</string>
+    <string name="editor_find_tag">Rechercher ou ajouter une étiquette</string>
+    <string name="editor_clear_tag_search">Effacer la recherche d’étiquette</string>
+    <string name="editor_assign_tag">Ajouter « %1$s »</string>
+    <string name="editor_repeat_interval">Intervalle de récurrence</string>
+    <string name="editor_repeat_interval_hint">Saisissez un nombre de 1 à 999.</string>
+    <string name="editor_repeat_interval_edit">Modifier l’intervalle : %1$s</string>
+    <string name="choose_date">Choisir une date</string>
+    <string name="remove_due_date">Supprimer la date</string>
+    <string name="priority_value">%1$d · %2$s</string>
+    <string name="repeat_title">Récurrence</string>
+    <string name="repeat_none">Jamais</string>
+    <string name="repeat_daily">Chaque jour</string>
+    <string name="repeat_weekly">Chaque semaine</string>
+    <string name="repeat_monthly">Chaque mois</string>
+    <string name="repeat_yearly">Chaque année</string>
+    <string name="repeat_needs_date">Choisissez une date d’échéance pour définir la récurrence.</string>
+    <string name="repeat_monthly_summary">%1$s · le %2$d</string>
+    <string name="repeat_yearly_summary">%1$s · à partir du %2$s</string>
+    <string name="repeat_less">Réduire l’intervalle</string>
+    <string name="repeat_more">Augmenter l’intervalle</string>
+    <string name="repeat_explanation">Terminer cette tâche la conserve dans l’historique et crée la prochaine occurrence. Les mois plus courts utilisent leur dernier jour.</string>
+    <string name="bulk_edit">Modifier les tâches sélectionnées</string>
+    <string name="bulk_edit_title">Modifier %1$d tâches</string>
+    <string name="bulk_edit_hint">Seuls les champs cochés seront modifiés.</string>
+    <string name="bulk_apply">Appliquer</string>
+    <string name="bulk_change_tags">Modifier les étiquettes</string>
+    <string name="bulk_change_priority">Modifier la priorité</string>
+    <string name="bulk_change_date">Modifier l’échéance</string>
+    <string name="bulk_tags_add">Ajouter</string>
+    <string name="bulk_tags_remove">Retirer</string>
+    <string name="bulk_tags_replace">Tout remplacer</string>
+    <string name="bulk_tags_clear">Toutes les étiquettes seront retirées des tâches sélectionnées.</string>
+    <string name="bulk_date_clear">Les dates d’échéance et les récurrences des tâches sélectionnées seront supprimées.</string>
+    <string name="tag_previous">Étiquette précédente</string>
+    <string name="tag_next">Étiquette suivante</string>
+    <string name="tag_swipe_hint">Balayez à gauche ou à droite pour changer d’étiquette</string>
+    <plurals name="repeat_days">
+        <item quantity="one">Tous les %1$d jour</item>
+        <item quantity="many">Tous les %1$d jours</item>
+        <item quantity="other">Tous les %1$d jours</item>
+    </plurals>
+    <plurals name="repeat_weeks">
+        <item quantity="one">Toutes les %1$d semaine</item>
+        <item quantity="many">Toutes les %1$d semaines</item>
+        <item quantity="other">Toutes les %1$d semaines</item>
+    </plurals>
+    <plurals name="repeat_months">
+        <item quantity="one">Tous les %1$d mois</item>
+        <item quantity="many">Tous les %1$d mois</item>
+        <item quantity="other">Tous les %1$d mois</item>
+    </plurals>
+    <plurals name="repeat_years">
+        <item quantity="one">Tous les %1$d an</item>
+        <item quantity="many">Tous les %1$d ans</item>
+        <item quantity="other">Tous les %1$d ans</item>
+    </plurals>
+    <string name="editor_date_time">Date et heure</string>
+    <string name="editor_edit_schedule">Modifier la date et l’heure : %1$s</string>
+    <string name="editor_include_time">Ajouter une heure</string>
+    <string name="editor_not_recurring">Sans récurrence</string>
+    <string name="editor_edit_recurrence">Modifier la récurrence : %1$s</string>
+    <string name="editor_repeat_every">Répéter</string>
+    <string name="editor_repeat_unit_days">Jours</string>
+    <string name="editor_repeat_unit_weeks">Semaines</string>
+    <string name="editor_repeat_unit_months">Mois</string>
+    <string name="editor_repeat_unit_years">Ans</string>
+    <string name="editor_more_tags">Afficher toutes les étiquettes</string>
+    <string name="editor_interval">Intervalle</string>
+    <string name="editor_hour">Heure</string>
+    <string name="editor_minute">Minute</string>
+    <string name="editor_invalid_time">Utilisez une heure de 00 à 23 et des minutes de 00 à 59.</string>
+    <string name="editor_type_date">Saisir une date</string>
+    <string name="editor_pick_date">Choisir dans le calendrier</string>
+    <string name="editor_pick_time">Choisir l’heure sur un cadran</string>
+    <string name="editor_type_time">Saisir une heure</string>
+</resources>

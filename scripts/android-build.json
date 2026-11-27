@@ -1,0 +1,34 @@
+{
+  "tasks": [
+    ":app:assembleDebug",
+    ":app:assembleRelease"
+  ],
+  "clean_tasks": [
+    ":app:clean"
+  ],
+  "required_variants": {
+    "app": [
+      "debug",
+      "release"
+    ]
+  },
+  "require_android_target_for_rebuild": true,
+  "source_globs": [
+    "app/**",
+    "shared/**",
+    "common/**",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+    "gradle.properties",
+    "local.properties",
+    "gradle/**",
+    "gradlew",
+    "gradlew.bat",
+    "buildSrc/**",
+    "build-logic/**",
+    "sync-engine/**",
+    "scripts/build-sync-android.py"
+  ]
+}

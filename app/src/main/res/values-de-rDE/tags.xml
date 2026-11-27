@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">Farbkreis</string>
     <string name="tag_color_brightness">Helligkeit</string>
-    <string name="tag_manage">Tags verwalten</string>
-    <string name="tag_manage_description">Tags für alle Aufgaben umbenennen, umfärben oder löschen.</string>
     <string name="tag_edit">Tag bearbeiten</string>
     <string name="tag_edit_named">Tag %1$s bearbeiten</string>
     <string name="tag_create">Neuer Tag</string>

@@ -9,11 +9,16 @@ import cn.super12138.todo.logic.resolveTag
 import cn.super12138.todo.logic.dueTimestamp
 import cn.super12138.todo.logic.database.taskTags
 import cn.super12138.todo.logic.database.TaskEntity
+import cn.super12138.todo.logic.database.Subtask
 import cn.super12138.todo.logic.model.Priority
+import cn.super12138.todo.logic.withDueDate
 import cn.super12138.todo.utils.ConfettiController
+import java.util.Locale
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -36,15 +41,21 @@ class EditorViewModel(
         priority = Priority.fromFloat(initialTask?.priority ?: 0f),
         dueDateMillis = initialTask?.dueDateMillis,
         dueTimeMinutes = initialTask?.dueTimeMinutes,
+        rollover = initialTask?.rollover ?: false,
+        recurrence = cn.super12138.todo.logic.TaskRecurrence.decode(initialTask?.recurrence),
         isCompleted = initialTask?.isCompleted ?: false
     )
     private val localUiState = MutableStateFlow(initialState)
+    private val tagOrderFailures = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val tagOrderErrors = tagOrderFailures.asSharedFlow()
     val uiState: StateFlow<TaskEditorUiState> = combine(
         settingsRepository.textFieldAutoFocusFlow, tagRepository.tags, tagRepository.colors,
         settingsRepository.defaultDueTimeFlow, localUiState
     ) { autoFocus, tags, colors, defaultTime, local ->
         local.copy(shouldAutoFocusContent = autoFocus, categoryList = tags,
             tagColors = colors, defaultDueTimeMinutes = defaultTime)
+    }.combine(settingsRepository.schedulingPreferencesFlow) { state, preferences ->
+        state.copy(schedulingPreferences = preferences)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initialState)
 
     private var creationDefaultsApplied = false
@@ -68,10 +79,11 @@ class EditorViewModel(
         if (initialTask != null || creationDefaultsApplied) return
         creationDefaultsApplied = true
         viewModelScope.launch {
+            val rollover = settingsRepository.rolloverDefaultFlow.first()
             val minutes = if (dueDateMillis != null) settingsRepository.defaultDueTimeFlow.first() else null
-            val state = localUiState.value.copy(tags = listOf(category).filter { it.isNotBlank() },
+            val state = localUiState.value.copy(rollover = rollover, tags = listOf(category).filter { it.isNotBlank() },
                 dueDateMillis = dueDateMillis?.let { dueTimestamp(it, minutes) }, dueTimeMinutes = minutes)
-            creationState = initialState.copy(tags = state.tags, dueDateMillis = state.dueDateMillis,
+            creationState = initialState.copy(rollover = rollover, tags = state.tags, dueDateMillis = state.dueDateMillis,
                 dueTimeMinutes = state.dueTimeMinutes)
             localUiState.value = state
         }
@@ -81,6 +93,25 @@ class EditorViewModel(
     fun setDetailsText(details: String) = localUiState.update { it.copy(details = details) }
     fun addSubtask() = localUiState.update {
         it.copy(subtasks = it.subtasks + cn.super12138.todo.logic.database.Subtask(content = ""))
+    }
+    fun setSubtaskDraft(text: String) = localUiState.update { it.copy(subtaskDraft = text) }
+
+    fun addSubtasks(text: String = localUiState.value.subtaskDraft, pastedList: Boolean = false): List<Subtask> {
+        val contents = if (pastedList) subtaskLines(text) else listOf(text.trim()).filter { it.isNotEmpty() }
+        val added = contents.map { Subtask(content = it) }
+        if (added.isNotEmpty()) localUiState.update {
+            it.copy(subtasks = it.subtasks + added, subtaskDraft = "")
+        }
+        return added
+    }
+
+    fun undoAddedSubtasks(ids: Set<String>) = localUiState.update { state ->
+        state.copy(subtasks = state.subtasks.filterNot { it.id in ids })
+    }
+
+    fun restoreSubtask(item: Subtask, index: Int) = localUiState.update { state ->
+        if (state.subtasks.any { it.id == item.id }) state
+        else state.copy(subtasks = state.subtasks.toMutableList().apply { add(index.coerceIn(0, size), item) })
     }
     fun updateSubtask(id: String, content: String) = localUiState.update { state ->
         state.copy(subtasks = state.subtasks.map { if (it.id == id) it.copy(content = content) else it })
@@ -98,15 +129,36 @@ class EditorViewModel(
         localUiState.update { it.copy(tags = (it.tags + tag).distinct(), category = "") }
     }
     fun removeTag(tag: String) = localUiState.update { it.copy(tags = it.tags - tag) }
+    fun reorderTags(order: List<String>) {
+        viewModelScope.launch {
+            try {
+                tagRepository.setOrder(order)
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (_: Exception) {
+                tagOrderFailures.emit(Unit)
+            }
+        }
+    }
     fun setPriority(priority: Priority) = localUiState.update { it.copy(priority = priority) }
     fun setDueDate(date: Long?) = localUiState.update {
         val time = if (date == null) null else if (it.dueDateMillis == null) uiState.value.defaultDueTimeMinutes else it.dueTimeMinutes
-        it.copy(dueDateMillis = date?.let { day -> dueTimestamp(day, time) }, dueTimeMinutes = time)
+        it.copy(dueDateMillis = date?.let { day -> dueTimestamp(day, time) }, dueTimeMinutes = time,
+            recurrence = it.recurrence.withDueDate(it.dueDateMillis, date))
     }
+    fun setRollover(value: Boolean) = localUiState.update { it.copy(rollover = value) }
+    fun setRecurrence(recurrence: cn.super12138.todo.logic.TaskRecurrence?) = localUiState.update { it.copy(recurrence = recurrence) }
     fun setDueTime(minutes: Int?) = localUiState.update {
         require(minutes == null || minutes in 0..1439)
         it.copy(dueTimeMinutes = if (it.dueDateMillis == null) null else minutes,
             dueDateMillis = it.dueDateMillis?.let { date -> dueTimestamp(date, minutes) })
+    }
+
+    fun setSchedule(dateMillis: Long?, minutes: Int?) = localUiState.update {
+        require(minutes == null || minutes in 0..1439)
+        val time = minutes.takeIf { dateMillis != null }
+        it.copy(dueDateMillis = dateMillis?.let { day -> dueTimestamp(day, time) },
+            dueTimeMinutes = time, recurrence = it.recurrence.withDueDate(it.dueDateMillis, dateMillis))
     }
     fun setCompleted(completed: Boolean) = localUiState.update { it.copy(isCompleted = completed) }
 
@@ -116,7 +168,8 @@ class EditorViewModel(
         return state.content.trim() != initial.content || state.details != initial.details ||
             state.tags != initial.tags || state.category.isNotBlank() || state.priority != initial.priority ||
             state.isCompleted != initial.isCompleted || state.dueDateMillis != initial.dueDateMillis ||
-            state.dueTimeMinutes != initial.dueTimeMinutes || state.subtasks != initial.subtasks
+            state.dueTimeMinutes != initial.dueTimeMinutes || state.subtasks != initial.subtasks ||
+            state.rollover != initial.rollover || state.subtaskDraft.isNotBlank() || state.recurrence != initial.recurrence
     }
 
     fun showDeleteConfirmDialog() = localUiState.update { it.copy(showDeleteConfirmDialog = true) }
@@ -126,11 +179,18 @@ class EditorViewModel(
 
     fun saveNewTask() {
         if (localUiState.value.isSaving || localUiState.value.isSaved || localUiState.value.content.isBlank()) return
+        addSubtasks()
         if (!isModified()) {
             localUiState.update { it.copy(isSaved = true) }
             return
         }
         val state = localUiState.value
+        val trimmedContent = state.content.trim()
+        val content = if (state.content == initialState.content) state.content else {
+            val firstCharacterEnd = trimmedContent.offsetByCodePoints(0, 1)
+            trimmedContent.substring(0, firstCharacterEnd).uppercase(Locale.ROOT) +
+                trimmedContent.substring(firstCharacterEnd)
+        }
         localUiState.update { it.copy(isSaving = true, saveFailed = false) }
         viewModelScope.launch {
             try {
@@ -139,14 +199,16 @@ class EditorViewModel(
                     .filter { it.isNotBlank() }.distinct()
                 settingsRepository.ensureTagColors(catalog + tags)
                 taskRepository.insertTask(TaskEntity(
-                    content = state.content.trim(), details = state.details, tags = tags,
+                    content = content, details = state.details, tags = tags,
                     subtasks = state.subtasks.filter { it.content.isNotBlank() }.map { it.copy(content = it.content.trim()) },
                     category = tags.firstOrNull().orEmpty(), isCompleted = state.isCompleted,
                     priority = state.priority.value, dueDateMillis = state.dueDateMillis,
                     dueTimeMinutes = state.dueTimeMinutes, id = initialTask?.id ?: 0,
-                    createdAtMillis = initialTask?.createdAtMillis
+                    createdAtMillis = initialTask?.createdAtMillis,
+                    rollover = state.rollover,
+                    recurrence = state.recurrence?.encode(), recurrenceParentId = initialTask?.recurrenceParentId
                 ))
-                localUiState.update { it.copy(isSaving = false, isSaved = true) }
+                localUiState.update { it.copy(isSaving = false, isSaved = true, isCompleted = state.isCompleted) }
             } catch (exception: CancellationException) {
                 throw exception
             } catch (_: Exception) {
@@ -162,3 +224,8 @@ class EditorViewModel(
 
     fun setConfettiVisibility(visible: Boolean) = confettiController.setVisibility(visible)
 }
+
+/** One pasted line is one checklist step; blank lines and common bullet markers are ignored. */
+internal fun subtaskLines(text: String): List<String> = text.lineSequence()
+    .map { it.trim().replace(Regex("^(?:[-*•]|\\d+[.)])\\s+"), "").trim() }
+    .filter { it.isNotEmpty() }.toList()

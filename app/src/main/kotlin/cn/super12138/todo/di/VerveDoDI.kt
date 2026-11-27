@@ -11,6 +11,7 @@ import cn.super12138.todo.constants.Constants
 import cn.super12138.todo.logic.SettingsRepository
 import cn.super12138.todo.logic.TaskRepository
 import cn.super12138.todo.logic.TagRepository
+import cn.super12138.todo.ui.pages.collections.TagCloudViewModel
 import cn.super12138.todo.logic.database.TaskDao
 import cn.super12138.todo.logic.database.TaskDatabase
 import cn.super12138.todo.logic.datastore.DataStoreManager
@@ -50,6 +51,7 @@ object VerveDoDI {
 
     val singleInstanceModule = module {
         singleOf(::ConfettiController)
+        single { cn.super12138.todo.logic.sync.TaskImports(get(), get()) }
         single<CsvWriter> { csvWriter { quoteMode = WriteQuoteMode.ALL } }
     }
 
@@ -66,15 +68,24 @@ object VerveDoDI {
                     TaskDatabase.MIGRATION_4_5,
                     TaskDatabase.MIGRATION_5_6,
                     TaskDatabase.MIGRATION_6_7,
-                    TaskDatabase.MIGRATION_7_8
+                    TaskDatabase.MIGRATION_7_8,
+                    TaskDatabase.MIGRATION_8_9,
+                    TaskDatabase.MIGRATION_9_10, TaskDatabase.MIGRATION_10_11, TaskDatabase.MIGRATION_11_12
                 )
                 .fallbackToDestructiveMigration(false)
                 .build()
         }
         single<TaskDao> { get<TaskDatabase>().taskDao() }
-        singleOf(::TaskRepository)
-        singleOf(::SettingsRepository)
+        single {
+            val application = androidApplication() as cn.super12138.todo.VerveDoApp
+            TaskRepository(get(), onTasksChanged = application::refreshTaskWidgets)
+        }
+        single { cn.super12138.todo.logic.sync.SyncedTags(get(), get()) }
+        single { SettingsRepository(get(), get()) }
+        single { cn.super12138.todo.logic.sync.SyncRepository(androidApplication(), get(), get()) }
         singleOf(::TagRepository)
+        viewModelOf(::TagCloudViewModel)
+        single { cn.super12138.todo.logic.TaskViewsRepository(get()) }
     }
 
     val datastoreModule = module {
@@ -86,6 +97,8 @@ object VerveDoDI {
         viewModelOf(::MainViewModel)
         viewModel { OverviewViewModel(get(), get(), get(), androidApplication()) }
         viewModelOf(::TaskViewModel)
+        viewModel { params -> cn.super12138.todo.ui.pages.collections.TaskCollectionViewModel(
+            params.get(), params.getOrNull<String>(), get(), get(), get(), androidApplication()) }
         viewModel { params -> cn.super12138.todo.ui.pages.detail.TaskDetailViewModel(params.get(), get(), get(), androidApplication()) }
         viewModel<EditorViewModel> { params ->
             EditorViewModel(

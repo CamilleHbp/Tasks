@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_title">Synchronization</string>
+    <string name="sync_description">Connect your devices with the same server and access code. Existing tasks are added to your private workspace.</string>
+    <string name="sync_connected">Connected to your private workspace</string>
+    <string name="sync_disconnected">Connect Android and desktop</string>
+    <string name="sync_pending">Pending changes</string>
+    <string name="sync_error">Synchronization could not finish. Your local edits are saved. Check your connection or reconnect with your access code.</string>
+    <string name="sync_server">Server address</string>
+    <string name="sync_code">Access code</string>
+    <string name="sync_connect">Connect / renew access</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_conflict">Choose a value to resolve the conflict</string>
+    <string name="sync_empty">Empty value</string>
+    <string name="sync_close">Close</string>
+    <string name="sync_field_title">Title</string>
+    <string name="sync_field_details">Details</string>
+    <string name="sync_field_completed">Completion</string>
+    <string name="sync_field_priority">Priority</string>
+    <string name="sync_field_dueDate">Date</string>
+    <string name="sync_field_dueTime">Time</string>
+    <string name="sync_field_timeZone">Time zone</string>
+    <string name="sync_field_checklist">Checklist</string>
+    <string name="sync_field_recurrence">Recurrence</string>
+    <string name="sync_field_tags">Tags</string>
+    <string name="sync_field_parentId">Previous occurrence</string>
+    <string name="sync_field_deleted">Deletion</string>
+    <string name="sync_field_retracted">Occurrence withdrawal</string>
+    <string name="sync_field_createdAt">Creation date</string>
+    <string name="sync_field_name">Name</string>
+    <string name="sync_field_color">Color</string>
+    <string name="sync_pending_count">Pending changes: %1$d</string>
+    <string name="sync_conflict_field">Resolve conflict: %1$s</string>
+    <string name="sync_backup_description">Exports tasks and tags. Device preferences and sign-in credentials stay on this device.</string>
+    <string name="sync_import_description">Adds tasks and tags from a backup, including legacy Android backups. Existing tasks and your connection are preserved.</string>
+    <string name="sync_import_success">Tasks and tags imported.</string>
+    <string name="native_sync_status">Live private-network synchronization</string>
+    <string name="sync_field_rollover">Roll over to tomorrow</string>
+</resources>

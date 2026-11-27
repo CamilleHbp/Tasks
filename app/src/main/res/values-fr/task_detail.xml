@@ -1,0 +1,26 @@
+<resources>
+    <string name="task_view_title">Voir la tâche</string>
+    <string name="task_edit">Modifier</string>
+    <string name="task_detail_edit">Modifier la tâche</string>
+    <string name="task_status_todo">À faire</string>
+    <string name="task_status_completed">Terminée</string>
+    <string name="task_detail_date_time">%1$s à %2$s</string>
+    <string name="task_detail_overdue">En retard · %1$s</string>
+    <string name="task_detail_due_accessibility">Échéance %1$s</string>
+    <string name="task_details_heading">Détails</string>
+    <string name="task_subtasks">Sous-tâches</string>
+    <string name="task_subtask_label">Sous-tâche %1$d</string>
+    <string name="task_subtask_remove">Supprimer la sous-tâche %1$d</string>
+    <string name="task_subtask_check">Terminer la sous-tâche %1$d</string>
+    <string name="task_subtask_add">Ajouter une sous-tâche</string>
+    <string name="task_subtasks_add">Ajouter des sous-tâches</string>
+    <string name="task_subtasks_empty">Décomposez cette tâche en petites étapes.</string>
+    <string name="task_subtasks_progress">%1$d sur %2$d terminées</string>
+    <string name="task_mark_incomplete">Marquer comme non terminée</string>
+    <string name="task_not_found">Cette tâche n’est plus disponible.</string>
+    <string name="task_load_failed">Impossible de charger cette tâche. Réessayez.</string>
+    <string name="task_update_failed">Impossible d’enregistrer la modification. Réessayez.</string>
+    <string name="task_select">Sélectionner</string>
+    <string name="task_select_accessibility">Sélectionner des tâches</string>
+    <string name="task_selection_hint">Touchez les tâches pour les sélectionner.</string>
+</resources>

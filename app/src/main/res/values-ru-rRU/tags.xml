@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">Цветовой круг</string>
     <string name="tag_color_brightness">Яркость</string>
-    <string name="tag_manage">Управление тегами</string>
-    <string name="tag_manage_description">Меняйте названия и цвета тегов или удаляйте их во всех задачах.</string>
     <string name="tag_edit">Изменить тег</string>
     <string name="tag_edit_named">Изменить тег %1$s</string>
     <string name="tag_create">Новый тег</string>

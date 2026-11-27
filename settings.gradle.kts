@@ -25,5 +25,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VerveTwoDo"
+rootProject.name = "Tasks"
 include(":app")
+include(":shared")

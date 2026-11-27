@@ -7,7 +7,7 @@ import time
 import urllib.request
 import urllib.error
 stage=Path(sys.argv[1])
-base='https://todo.camille.studio'
+base='https://tasks.camille.studio'
 files=json.loads((stage/'verified-files.json').read_text())
 for attempt in range(12):
     try:

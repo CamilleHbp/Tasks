@@ -1,0 +1,28 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 56;
+    objects = {
+        000000000000000000000001 = { isa = PBXProject; attributes = { LastUpgradeCheck = 1600; }; buildConfigurationList = 000000000000000000000010; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, fr, Base); mainGroup = 000000000000000000000002; productRefGroup = 000000000000000000000003; projectDirPath = ""; projectRoot = ""; targets = (000000000000000000000004); };
+        000000000000000000000002 = { isa = PBXGroup; children = (000000000000000000000005, 000000000000000000000008, 000000000000000000000003); sourceTree = "<group>"; };
+        000000000000000000000003 = { isa = PBXGroup; children = (000000000000000000000006); name = Products; sourceTree = "<group>"; };
+        000000000000000000000004 = { isa = PBXNativeTarget; buildConfigurationList = 000000000000000000000011; buildPhases = (000000000000000000000012, 000000000000000000000013); buildRules = (); dependencies = (); name = VerveWidgets; productName = VerveWidgets; productReference = 000000000000000000000006; productType = "com.apple.product-type.app-extension"; };
+        000000000000000000000005 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Widgets/VerveWidgets.swift; sourceTree = "<group>"; };
+        000000000000000000000006 = { isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VerveWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+        000000000000000000000007 = { isa = PBXBuildFile; fileRef = 000000000000000000000005; };
+        000000000000000000000008 = { isa = PBXVariantGroup; children = (000000000000000000000009, 00000000000000000000000A); name = Localizable.strings; sourceTree = "<group>"; };
+        000000000000000000000009 = { isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Resources/en.lproj/Localizable.strings; sourceTree = "<group>"; };
+        00000000000000000000000A = { isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = Resources/fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+        00000000000000000000000B = { isa = PBXBuildFile; fileRef = 000000000000000000000008; };
+        000000000000000000000010 = { isa = XCConfigurationList; buildConfigurations = (000000000000000000000020, 000000000000000000000021); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        000000000000000000000011 = { isa = XCConfigurationList; buildConfigurations = (000000000000000000000022, 000000000000000000000023); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        000000000000000000000012 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000007); runOnlyForDeploymentPostprocessing = 0; };
+        000000000000000000000013 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000000B); runOnlyForDeploymentPostprocessing = 0; };
+        000000000000000000000020 = { isa = XCBuildConfiguration; buildSettings = { SDKROOT = macosx; MACOSX_DEPLOYMENT_TARGET = 14.0; SWIFT_VERSION = 5.0; }; name = Debug; };
+        000000000000000000000021 = { isa = XCBuildConfiguration; buildSettings = { SDKROOT = macosx; MACOSX_DEPLOYMENT_TARGET = 14.0; SWIFT_VERSION = 5.0; }; name = Release; };
+        000000000000000000000022 = { isa = XCBuildConfiguration; buildSettings = { APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = Widget.entitlements; CODE_SIGN_STYLE = Automatic; ENABLE_APP_SANDBOX = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = "Widget-Info.plist"; PRODUCT_BUNDLE_IDENTIFIER = studio.camille.vervetwodo.widgets.extension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; name = Debug; };
+        000000000000000000000023 = { isa = XCBuildConfiguration; buildSettings = { APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = Widget.entitlements; CODE_SIGN_STYLE = Automatic; ENABLE_APP_SANDBOX = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = "Widget-Info.plist"; PRODUCT_BUNDLE_IDENTIFIER = studio.camille.vervetwodo.widgets.extension; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_OPTIMIZATION_LEVEL = "-O"; }; name = Release; };
+    };
+    rootObject = 000000000000000000000001;
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rollover_title">Carry forward to the next day</string>
+    <string name="rollover_default">Carry unfinished tasks forward</string>
+    <string name="rollover_default_hint">Enable carry forward by default for new tasks. You can change it for each task.</string>
+</resources>

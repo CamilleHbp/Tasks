@@ -23,6 +23,7 @@ fun SwitchSettingsItem(
     SettingsItem(
         leadingIcon = painterResource(leadingIconRes),
         title = title,
+        titleMaxLines = Int.MAX_VALUE,
         description = description,
         trailingContent = {
             Switch(
@@ -49,6 +50,7 @@ fun SwitchSettingsItem(
     SettingsItem(
         leadingIcon = leadingIcon,
         title = title,
+        titleMaxLines = Int.MAX_VALUE,
         description = description,
         trailingContent = {
             Switch(

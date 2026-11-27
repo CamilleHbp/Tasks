@@ -36,7 +36,8 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+val dateFormat: SimpleDateFormat
+    get() = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
 fun Int.blend(
     color: Int,

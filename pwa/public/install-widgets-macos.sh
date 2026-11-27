@@ -1,6 +1,6 @@
 #!/bin/sh
-# Installs or updates VerveTwoDo Widgets for macOS:
-#   curl -fsSL https://todo.camille.studio/install-widgets-macos.sh | sh
+# Installs or updates Tasks Widgets for macOS:
+#   curl -fsSL https://tasks.camille.studio/install-widgets-macos.sh | sh
 # The latest release is read from the download catalogue and checked against its SHA-256 and
 # signature before anything is replaced. No administrator rights are needed.
 set -eu
@@ -16,14 +16,14 @@ esac
 say() { if [ "$french" = 1 ]; then printf '%s\n' "$2"; else printf '%s\n' "$1"; fi; }
 fail() { say "$1" "$2" >&2; exit 1; }
 
-[ "$(uname -s)" = Darwin ] || fail "VerveTwoDo Widgets requires macOS." "VerveTwoDo Widgets nécessite macOS."
+[ "$(uname -s)" = Darwin ] || fail "Tasks Widgets requires macOS." "Widgets Tâches nécessite macOS."
 major=$(sw_vers -productVersion | cut -d. -f1)
-[ "$major" -ge 14 ] || fail "VerveTwoDo Widgets requires macOS 14 or later." "VerveTwoDo Widgets nécessite macOS 14 ou une version ultérieure."
+[ "$major" -ge 14 ] || fail "Tasks Widgets requires macOS 14 or later." "Widgets Tâches nécessite macOS 14 ou une version ultérieure."
 
 work=$(mktemp -d -t vervetwodo-widgets)
 trap 'rm -rf "$work"' EXIT
 
-say "Downloading VerveTwoDo Widgets…" "Téléchargement de VerveTwoDo Widgets…"
+say "Downloading Tasks Widgets…" "Téléchargement de Widgets Tâches…"
 curl -fsSL --retry 3 "$server/api/v1/vervetwodo-widgets.json" -o "$work/catalogue.json" ||
   fail "Could not reach the download server. Check your connection and try again." "Impossible de joindre le serveur de téléchargement. Vérifiez votre connexion et réessayez."
 release=$(osascript -l JavaScript - "$work/catalogue.json" <<'JS'
@@ -56,7 +56,7 @@ new="$work/app/$app_name"
 if [ -d "/Applications/$app_name" ] && [ -w /Applications ]; then target="/Applications/$app_name"; else
   mkdir -p "$HOME/Applications"; target="$HOME/Applications/$app_name"; fi
 
-say "Installing VerveTwoDo Widgets $version…" "Installation de VerveTwoDo Widgets $version…"
+say "Installing Tasks Widgets $version…" "Installation de Widgets Tâches $version…"
 osascript -e "tell application id \"$bundle_id\" to quit" >/dev/null 2>&1 || true
 for _ in 1 2 3 4 5 6 7 8 9 10; do pgrep -f "$app_name/Contents/MacOS/" >/dev/null || break; sleep 1; done
 pkill -f "$app_name/Contents/MacOS/" 2>/dev/null || true
@@ -64,9 +64,9 @@ if [ -e "$target" ]; then mv "$target" "$work/previous.app"; fi
 if ! ditto "$new" "$target"; then
   rm -rf "$target"
   [ -e "$work/previous.app" ] && mv "$work/previous.app" "$target"
-  fail "VerveTwoDo Widgets could not be installed." "VerveTwoDo Widgets n’a pas pu être installé."
+  fail "Tasks Widgets could not be installed." "Widgets Tâches n’a pas pu être installé."
 fi
 for extension in "$target"/Contents/PlugIns/*.appex; do pluginkit -a "$extension" 2>/dev/null || true; done
 open "$target"
-say "VerveTwoDo Widgets is installed. Connect with your access code, then add VerveTwoDo from Edit Widgets." \
-    "VerveTwoDo Widgets est installé. Connectez-vous avec votre code d’accès, puis ajoutez VerveTwoDo depuis Modifier les widgets."
+say "Tasks Widgets is installed. Connect with your access code, then add VerveTwoDo from Edit Widgets." \
+    "Widgets Tâches est installé. Connectez-vous avec votre code d’accès, puis ajoutez VerveTwoDo depuis Modifier les widgets."

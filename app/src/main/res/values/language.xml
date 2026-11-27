@@ -1,0 +1,13 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="pref_language">Language</string>
+    <string name="language_system">Follow system</string>
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_french" translatable="false">Français</string>
+    <string name="debug_inset_direction">Direction: left, top, right, bottom\n</string>
+    <string name="debug_gestures_padding">Gesture padding:\n%1$s\n</string>
+    <string name="debug_drawing_padding">Drawing padding:\n%1$s\n</string>
+    <string name="debug_caption_bar">Caption bar: %1$s, %2$s</string>
+    <string name="debug_navigation_bar">Navigation bar: %1$s</string>
+    <string name="label_visible">Visible</string>
+    <string name="label_hidden">Hidden</string>
+</resources>

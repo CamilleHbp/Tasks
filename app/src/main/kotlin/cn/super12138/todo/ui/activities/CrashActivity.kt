@@ -1,7 +1,7 @@
 package cn.super12138.todo.ui.activities
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +21,7 @@ import cn.super12138.todo.utils.isDark
 import com.kyant.m3color.dynamiccolor.ColorSpec
 import org.koin.compose.viewmodel.koinViewModel
 
-class CrashActivity : ComponentActivity() {
+class CrashActivity : AppCompatActivity() {
     companion object {
         const val BRAND_PREFIX = "Brand:      "
         const val MODEL_PREFIX = "Model:      "
@@ -64,6 +64,7 @@ class CrashActivity : ComponentActivity() {
             LaunchedEffect(hapticFeedback) { VibrationUtils.setEnabled(hapticFeedback) }
 
             VerveDoTheme(
+                color = if (appearanceUiState.dynamicColor) null else androidx.compose.ui.graphics.Color(appearanceUiState.themeColor),
                 darkTheme = isDark,
                 pureBlackMode = appearanceUiState.pureBlackMode,
                 style = appearanceUiState.paletteStyle,

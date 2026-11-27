@@ -1,0 +1,9 @@
+<resources>
+    <string name="reminder_title">Task reminders</string>
+    <string name="reminder_description">Notify me on the due date, at the task time or the default time.</string>
+    <string name="reminder_default_time">Default time: %1$s</string>
+    <string name="reminder_permissions">Open notification settings</string>
+    <string name="reminder_exact">Allow precise reminders</string>
+    <string name="reminder_exact_hint">Allow alarms and reminders for on-time notifications. Otherwise Android may delay them.</string>
+    <string name="reminder_body">Open Tasks to view this task.</string>
+</resources>

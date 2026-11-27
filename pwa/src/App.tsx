@@ -41,7 +41,7 @@ import {
 import "./style.css";
 import { TaskIcon } from "./TaskIcon";
 export default function App() {
-  const [data, setData] = useState<Data>(),
+  const [storedData, setData] = useState<Data>(),
     [fatal, setFatal] = useState(""),
     [view, setView] = useState("agenda"),
     [tagFilter, setTagFilter] = useState<string | null>(null),
@@ -63,7 +63,22 @@ export default function App() {
     [widgetOffer, setWidgetOffer] = useState(
       () => !widgetInstalled() && !widgetOfferDismissed(),
     );
+  const data = React.useMemo(() => {
+    if (!storedData) return undefined;
+    const collator = new Intl.Collator(locale(storedData.preferences.language), { sensitivity: "base" });
+    return { ...storedData, tags: [...storedData.tags].sort((a, b) => collator.compare(a.name.trim(), b.name.trim())) };
+  }, [storedData]);
   const searchRef = useRef<HTMLInputElement>(null);
+  const undoButton = useRef<HTMLButtonElement>(null);
+  const focusAfterChange = useRef<string | null>(null);
+  React.useLayoutEffect(() => {
+    const id = focusAfterChange.current;
+    if (!id) return;
+    focusAfterChange.current = null;
+    if (document.activeElement !== document.body) return;
+    const target = document.getElementById(`task-open-${id}`) || undoButton.current || searchRef.current;
+    target?.focus();
+  }, [data?.revision, task]);
   const t = translator(data?.preferences.language || "system");
   useEffect(() => {
     if (data?.connected && data.preferences.push) {
@@ -100,6 +115,8 @@ export default function App() {
     document.documentElement.lang = locale(
       data?.preferences.language || "system",
     );
+    document.title = translator(document.documentElement.lang)("appName");
+    document.querySelector<HTMLLinkElement>('link[rel="manifest"]')!.href = document.documentElement.lang === "fr" ? "/manifest-fr.webmanifest" : "/manifest.webmanifest";
     document.documentElement.dataset.theme =
       data?.preferences.theme || "system";
   }, [data?.preferences.language, data?.preferences.theme]);
@@ -233,14 +250,19 @@ export default function App() {
         setSelected([]);
       },
     });
-  const toggle = (id: string, done: boolean) =>
-    action((d) => commit(d, completion(d, [id], done)));
+  const toggle = (id: string, done: boolean) => {
+    focusAfterChange.current = id;
+    action((d) => commit(d, completion(d, [id], done)), done ? "taskCompleted" : "taskReopened");
+  };
   const save = async (draft: Task, base: Task) => {
     const updated = await run((d) => {
       const current = d.tasks.find((t) => t.id === draft.id);
       if ((current && !equal(current, base)) || (!current && base.createdAt))
         throw Error("taskChanged");
-      commit(d, [draft]);
+      if (current && draft.completed !== current.completed) {
+        const staged = {...d, tasks:d.tasks.map(task => task.id === draft.id ? {...draft, completed:current.completed} : task)};
+        commit(d, completion(staged, [draft.id], draft.completed));
+      } else commit(d, [draft]);
     }, "saved");
     setData((prior) => prior && prior.revision > updated.revision ? prior : updated);
     return updated.tasks.find((task) => task.id === draft.id)!;
@@ -248,7 +270,7 @@ export default function App() {
   if (fatal)
     return (
       <main className="fatal">
-        <h1>VerveTwoDo</h1>
+        <h1>{t("appName")}</h1>
         <p role="alert">{t(fatal)}</p>
         <button onClick={() => location.reload()}>{t("retry")}</button>
       </main>
@@ -342,6 +364,11 @@ export default function App() {
     tagFilter !== null
       ? data.tags.find((t) => t.id === tagFilter)?.name || t("untagged")
       : t(view);
+  const previous = data.undo?.before.length === 1 ? data.undo.before[0] : undefined;
+  const changed = previous && data.undo?.after.find(item => item.id === previous.id);
+  const undoLabel = changed && previous && changed.completed !== previous.completed
+    ? t(changed.completed ? "undoCompletion" : "undoReopening")
+    : t("undo");
   const navigate = (next: string, id: string | null = null) => {
     setView(next);
     setTagFilter(id);
@@ -367,7 +394,7 @@ export default function App() {
       <aside className="sidebar">
         <div className="brand">
           <img src="/icons/app.svg" alt="" />
-          <span>VerveTwoDo</span>
+          <span>{t("appName")}</span>
         </div>
         <button
           className="primary new-task"
@@ -379,9 +406,9 @@ export default function App() {
           }
         >
           ＋ {t("newTask")}
-          <kbd>⌘ N</kbd>
+          <kbd>{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"} N</kbd>
         </button>
-        <nav aria-label="VerveTwoDo">
+        <nav aria-label={t("appName")}>
           {nav("agenda", "▤")}
           {nav("favorites", "☆")}
           {nav("collection", "▦")}
@@ -437,7 +464,6 @@ export default function App() {
       <main className="workspace">
         <header className="page-header">
           <div>
-            <p className="eyebrow">{t("localOnly")}</p>
             <h1>{title}</h1>
           </div>
           <div className="header-actions">
@@ -636,7 +662,7 @@ export default function App() {
           </div>
         ) : (
           <div className="task-groups">
-            {groups.map(([key, items]) => (
+            {live.length > 0 && groups.map(([key, items]) => (
               <section
                 key={key}
                 className={`task-group ${key === "overdue" ? "overdue" : ""}`}
@@ -691,6 +717,7 @@ export default function App() {
                             />
                           ) : (
                             <button
+                              title={t(item.completed ? "reopen" : "complete")}
                               className="completion"
                               style={{
                                 background: item.tags.length
@@ -704,6 +731,7 @@ export default function App() {
                             </button>
                           )}
                           <button
+                            id={`task-open-${item.id}`}
                             className="task-open"
                             onClick={() => setTask(item)}
                           >
@@ -806,7 +834,10 @@ export default function App() {
           </span>
           <span>{t("localWeb")}</span>
           {data.undo && (
-            <button onClick={() => action(undo, "undone")}>{t("undo")}</button>
+            <button ref={undoButton} onClick={() => {
+              focusAfterChange.current = data.undo?.before[0]?.id ?? data.undo?.after[0]?.id ?? null;
+              action(undo, "undone");
+            }}>{undoLabel}</button>
           )}
         </div>
       </main>
@@ -824,10 +855,12 @@ export default function App() {
           task={task}
           data={data}
           t={t}
-          onClose={() => setTask(undefined)}
+          onClose={() => {
+            focusAfterChange.current = task.id;
+            setTask(undefined);
+          }}
           onSave={save}
           onDelete={(id) => remove([id])}
-          onComplete={toggle}
         />
       )}
       {tag !== undefined && (

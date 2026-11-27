@@ -7,7 +7,6 @@ import cn.super12138.todo.ui.pages.settings.SettingsAppearanceUiState
 import cn.super12138.todo.utils.ConfettiController
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
 class MainViewModel(
@@ -19,21 +18,7 @@ class MainViewModel(
     val hapticFeedbackFlow = settingsRepository.hapticFeedbackFlow
     val previewColorSystemFlow = settingsRepository.previewColorSystemFlow
 
-    val appearanceUiState: StateFlow<SettingsAppearanceUiState> = combine(
-        settingsRepository.dynamicColorFlow,
-        settingsRepository.paletteStyleFlow,
-        settingsRepository.darkModeFlow,
-        settingsRepository.pureBlackFlow,
-        settingsRepository.contrastLevelFlow
-    ) { dynamicColor, paletteStyle, darkMode, pureBlackMode, contrastLevel ->
-        SettingsAppearanceUiState(
-            dynamicColor = dynamicColor,
-            paletteStyle = paletteStyle,
-            darkMode = darkMode,
-            pureBlackMode = pureBlackMode,
-            contrastLevel = contrastLevel
-        )
-    }.stateIn(
+    val appearanceUiState: StateFlow<SettingsAppearanceUiState> = settingsRepository.appearanceFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = SettingsAppearanceUiState()

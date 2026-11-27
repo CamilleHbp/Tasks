@@ -28,7 +28,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsData(
     modifier: Modifier = Modifier,
-    toCategoryManager: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: SettingsDataViewModel = koinViewModel()
 ) {
@@ -114,9 +113,9 @@ fun SettingsData(
                 SettingsItem(
                     leadingIconRes = R.drawable.ic_download,
                     title = stringResource(R.string.pref_backup),
-                    description = stringResource(R.string.pref_backup_desc),
+                    description = stringResource(R.string.sync_backup_description),
                     onClick = {
-                        backupLauncher.launch("VerveTwoDo-backup-${SystemUtils.getTime()}.zip")
+                        backupLauncher.launch("Tasks-backup-${SystemUtils.getTime()}.zip")
                     }
                 )
             }
@@ -124,7 +123,7 @@ fun SettingsData(
                 SettingsItem(
                     leadingIconRes = R.drawable.ic_upload,
                     title = stringResource(R.string.pref_restore),
-                    description = stringResource(R.string.pref_restore_desc),
+                    description = stringResource(R.string.sync_import_description),
                     onClick = {
                         restoreLauncher.launch(arrayOf("application/zip"))
                     }
@@ -136,17 +135,8 @@ fun SettingsData(
                     title = stringResource(R.string.pref_export_task),
                     description = stringResource(R.string.pref_export_task_desc),
                     onClick = {
-                        exportCsvLauncher.launch("VerveTwoDo-backup-${SystemUtils.getTime()}.csv")
+                        exportCsvLauncher.launch("Tasks-backup-${SystemUtils.getTime()}.csv")
                     }
-                )
-            }
-            item {
-                SettingsCategory(stringResource(R.string.tag_manage))
-                SettingsItem(
-                    leadingIconRes = R.drawable.ic_category,
-                    title = stringResource(R.string.tag_manage),
-                    description = stringResource(R.string.tag_manage_description),
-                    onClick = toCategoryManager
                 )
             }
         }
@@ -156,9 +146,9 @@ fun SettingsData(
         visible = uiState.showRestoreDialog,
         iconRes = R.drawable.ic_restart_alt,
         title = stringResource(R.string.tip_tips),
-        text = stringResource(R.string.tip_restore_success),
+        text = stringResource(R.string.sync_import_success),
         showDismissButton = false,
-        onConfirm = { context.restartApp() },
+        onConfirm = viewModel::hideRestoreDialog,
         onDismiss = viewModel::hideRestoreDialog,
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
@@ -168,8 +158,8 @@ fun SettingsData(
         options = BackupFormat.entries,
         onSelect = {
             when (it) {
-                BackupFormat.Zip -> backupZipLauncher.launch("VerveTwoDo-backup-${SystemUtils.getTime()}.zip")
-                BackupFormat.Csv -> backupCsvLauncher.launch("VerveTwoDo-backup-${SystemUtils.getTime()}.csv")
+                BackupFormat.Zip -> backupZipLauncher.launch("Tasks-backup-${SystemUtils.getTime()}.zip")
+                BackupFormat.Csv -> backupCsvLauncher.launch("Tasks-backup-${SystemUtils.getTime()}.csv")
             }
         },
         onDismiss = viewModel::hideBackupFormatDialog

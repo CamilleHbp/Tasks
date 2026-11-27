@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_status_checking">Vérification en cours</string>
+    <string name="sync_status_checking_hint">Vérification de la connexion et des modifications enregistrées.</string>
+    <string name="sync_status_disconnected">Non connecté</string>
+    <string name="sync_status_disconnected_hint">Les tâches sont enregistrées sur cet appareil. Connectez-vous pour les synchroniser avec vos autres appareils.</string>
+    <string name="sync_status_syncing">Synchronisation en cours</string>
+    <string name="sync_status_syncing_hint">Échange des modifications avec votre service de synchronisation.</string>
+    <string name="sync_status_synced">À jour</string>
+    <string name="sync_status_synced_hint">Cet appareil correspond au dernier état confirmé du serveur. Les autres appareils peuvent encore être hors ligne.</string>
+    <string name="sync_status_conflict">Résoudre les conflits</string>
+    <string name="sync_status_conflict_hint">Plusieurs versions nécessitent votre choix. Vos modifications enregistrées restent disponibles.</string>
+    <string name="sync_status_offline">Hors ligne</string>
+    <string name="sync_status_offline_hint">Vos modifications sont enregistrées ici. La synchronisation reprendra au retour de la connexion.</string>
+    <string name="sync_status_pending">Modifications en attente</string>
+    <string name="sync_status_pending_hint">Certaines modifications locales ne sont pas encore confirmées par le serveur.</string>
+    <string name="sync_status_unconfirmed">Synchronisation non confirmée</string>
+    <string name="sync_status_unconfirmed_hint">Le moteur de synchronisation n’a pas confirmé la réception par le serveur. Une connexion seule ne garantit pas que vos modifications sont à jour.</string>
+    <string name="sync_status_stale">Synchronisation à vérifier</string>
+    <string name="sync_status_stale_hint">La dernière confirmation n’est plus à jour. Vérifiez à nouveau si cet appareil est à jour.</string>
+    <string name="sync_status_error">Échec de synchronisation</string>
+    <string name="sync_status_error_hint">Vos modifications locales sont enregistrées. Réessayez ou vérifiez votre connexion dans les réglages de synchronisation.</string>
+    <string name="sync_status_action">État de synchronisation : %1$s</string>
+    <string name="sync_status_last_success">Dernière confirmation du serveur</string>
+    <string name="sync_status_last_check">Dernière vérification terminée</string>
+    <string name="sync_status_never">Pas encore</string>
+    <string name="sync_status_pending_count">Modifications en attente : %1$d</string>
+    <string name="sync_status_pending_unknown">Modifications en attente : nombre indisponible</string>
+    <string name="sync_status_conflicts">Conflits : %1$d</string>
+    <string name="sync_status_check">Synchroniser maintenant</string>
+    <string name="sync_status_settings">Réglages de synchronisation</string>
+    <string name="sync_status_connect">Se connecter</string>
+    <string name="sync_status_retry">Réessayer</string>
+    <string name="sync_status_resolve">Résoudre les conflits</string>
+    <string name="sync_status_close">Fermer</string>
+</resources>

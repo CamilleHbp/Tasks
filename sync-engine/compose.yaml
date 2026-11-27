@@ -1,0 +1,15 @@
+services:
+  vervetwodo:
+    build: .
+    image: vervetwodo-sync:0.1.0
+    restart: unless-stopped
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    volumes:
+      - /srv/homeserver/data/vervetwodo:/data
+    networks: [web]
+networks:
+  web:
+    external: true
+    name: homeserver-web

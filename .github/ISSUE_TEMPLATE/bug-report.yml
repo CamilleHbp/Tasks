@@ -1,5 +1,5 @@
 name: 问题反馈 / Bug Report
-description: 发现并反馈问题以帮助改进 VerveTwoDo / Create a report to help us improve VerveTwoDo
+description: 发现并反馈问题以帮助改进 Tasks / Create a report to help us improve Tasks
 title: "[Bug] "
 labels: [ "bug" ]
 body:
@@ -8,7 +8,7 @@ body:
     attributes:
       label: 检查列表 / Checklist
       options:
-        - label: 我正在使用 VerveTwoDo 的最新版本 / I am using the latest version of VerveTwoDo
+        - label: 我正在使用 Tasks 的最新版本 / I am using the latest version of Tasks
           required: true
         - label: 确认没有之前相似或重复的问题（若重复会直接关闭） / Confirm that there are no similar or duplicate issues previously raised (if duplicate, the issue will be closed directly)
           required: true
@@ -16,8 +16,8 @@ body:
   - type: dropdown
     id: version-variant
     attributes:
-      label: VerveTwoDo 版本类型 / VerveTwoDo Variant
-      description: 请选择当前 VerveTwoDo 的版本类型 / Select the version of VerveTwoDo variant you're currently using
+      label: Tasks 版本类型 / Tasks Variant
+      description: 请选择当前 Tasks 的版本类型 / Select the version of Tasks variant you're currently using
       options:
         - Release APK
         - CI build
@@ -27,8 +27,8 @@ body:
   - type: input
     id: version-code
     attributes:
-      label: VerveTwoDo 版本
-      description: 请输入你正在使用的 VerveTwoDo 版本，你可以在设置中找到 / Enter the version of VerveTwoDo you're using. You can find this in the settings
+      label: Tasks 版本
+      description: 请输入你正在使用的 Tasks 版本，你可以在设置中找到 / Enter the version of Tasks you're using. You can find this in the settings
       placeholder: 例如：2.0.2(561) / e.g. 2.0.2(561)
     validations:
       required: true

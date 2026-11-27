@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">Color wheel</string>
     <string name="tag_color_brightness">Brightness</string>
-    <string name="tag_manage">Manage tags</string>
-    <string name="tag_manage_description">Rename, recolor, or delete tags across your tasks.</string>
     <string name="tag_edit">Edit tag</string>
     <string name="tag_edit_named">Edit tag %1$s</string>
     <string name="tag_create">New tag</string>

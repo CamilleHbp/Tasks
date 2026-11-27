@@ -19,6 +19,7 @@ fun PalettePicker(
     currentPalette: PaletteStyle,
     onPaletteChange: (paletteStyle: PaletteStyle) -> Unit,
     isDynamicColor: Boolean,
+    themeColor: Int = cn.super12138.todo.logic.model.DEFAULT_THEME_COLOR,
     darkMode: DarkMode,
     pureBlackMode: Boolean,
     contrastLevel: ContrastLevel,
@@ -34,6 +35,7 @@ fun PalettePicker(
         items(items = PaletteStyle.entries, key = { it.id }) {
             PaletteItem(
                 isDynamicColor = isDynamicColor,
+                themeColor = themeColor,
                 isDark = darkMode.isDark(),
                 paletteStyle = it,
                 selected = currentPalette == it,

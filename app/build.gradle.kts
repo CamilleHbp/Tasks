@@ -13,6 +13,15 @@ room3 {
     schemaDirectory("$projectDir/schemas")
 }
 
+val buildSyncNative = tasks.register<Exec>("buildSyncNative") {
+    inputs.files(fileTree("../sync-engine") { include("**/*.go", "go.mod", "go.sum") })
+    inputs.file("../scripts/build-sync-android.py")
+    outputs.file(layout.buildDirectory.file("generated/sync/vervesync.aar"))
+    workingDir(rootProject.projectDir)
+    commandLine("python3", "scripts/build-sync-android.py")
+}
+tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(buildSyncNative) }
+
 // 配置版本信息
 /* val commitHash by lazy { "git rev-parse --short HEAD".exec()}
 val verCode = "git rev-list --count HEAD".exec().toInt() */
@@ -41,12 +50,22 @@ android {
         applicationId = "studio.camille.vervetwodo"
         minSdk = 26
         targetSdk = 37
-        versionCode = 128807
-        versionName = "1.0.27"
+        versionCode = 128810
+        versionName = "1.0.30"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        base.archivesName.set("vervetwodo-${versionName}")
+        base.archivesName.set("tasks-${versionName}")
+    }
+
+    // Standalone CPU-specific APKs, plus compatibility for older updaters.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = true
+        }
     }
 
     buildTypes {
@@ -61,6 +80,11 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+
+    // Direct APK downloads should compress native libraries instead of storing them verbatim.
+    packaging {
+        jniLibs.useLegacyPackaging = true
     }
 
     compileOptions {
@@ -97,10 +121,14 @@ kotlin {
 }
 
 dependencies {
-    implementation(files("libs/camille-updater-1.0.0.aar"))
+    implementation(files("libs/camille-updater-1.0.5.aar"))
+    implementation(project(":shared"))
+    implementation(files(layout.buildDirectory.file("generated/sync/vervesync.aar")).builtBy(buildSyncNative))
 
     // Android X
     implementation(libs.androidx.core.ktx)
+    implementation("androidx.work:work-runtime-ktx:2.10.4")
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -146,6 +174,9 @@ dependencies {
     implementation(libs.koin.compose.viewmodel)
     // Kotlin Csv
     implementation(libs.jsoizo.kotlin.csv)
+    // Markdown task details
+    implementation(libs.markdown.renderer)
+    implementation(libs.markdown.material3)
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

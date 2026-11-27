@@ -18,13 +18,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/CamilleHbp/VerveTwoDo/sync-engine/mobile"
+	"github.com/CamilleHbp/Tasks/sync-engine/mobile"
 )
 
 type engine interface{ Call(string, string) string }
 type gateway struct {
 	engine                                            engine
-	origin, legacyOrigin, upstream, directory, assets string
+	origin, legacyOrigin, migrationOrigin, upstream, directory, assets string
 	secure                                            bool
 	mu                                                sync.Mutex
 	call                                              sync.Mutex
@@ -94,7 +94,7 @@ func decode(w http.ResponseWriter, r *http.Request, out any) error {
 	return nil
 }
 func (g *gateway) allowedOrigin(origin string) bool {
-	return origin != "" && (origin == g.origin || origin == g.legacyOrigin)
+	return origin != "" && (origin == g.origin || origin == g.legacyOrigin || origin == g.migrationOrigin)
 }
 
 func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -360,7 +360,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer e.Close()
-	g := &gateway{engine: e, origin: env("PUBLIC_ORIGIN", "http://127.0.0.1:8791"), legacyOrigin: os.Getenv("LEGACY_ORIGIN"), upstream: env("SYNC_ORIGIN", "https://vervetwodo.195-15-214-30.sslip.io"), directory: directory, assets: env("ASSET_DIR", "../dist"), sessions: map[string]int64{}}
+	g := &gateway{engine: e, origin: env("PUBLIC_ORIGIN", "http://127.0.0.1:8791"), legacyOrigin: os.Getenv("LEGACY_ORIGIN"), migrationOrigin: os.Getenv("MIGRATION_ORIGIN"), upstream: env("SYNC_ORIGIN", "https://vervetwodo.195-15-214-30.sslip.io"), directory: directory, assets: env("ASSET_DIR", "../dist"), sessions: map[string]int64{}}
 	g.secure = strings.HasPrefix(g.origin, "https://")
 
 	if b, err := os.ReadFile(filepath.Join(directory, "sessions.json")); err == nil {

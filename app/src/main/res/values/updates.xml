@@ -1,0 +1,4 @@
+<resources>
+    <string name="pref_check_updates">Check for updates</string>
+    <string name="pref_check_updates_desc">Check now, even if you chose Later.</string>
+</resources>

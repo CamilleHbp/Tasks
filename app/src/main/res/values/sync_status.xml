@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_status_checking">Checking sync</string>
+    <string name="sync_status_checking_hint">Checking the connection and saved changes.</string>
+    <string name="sync_status_disconnected">Not connected</string>
+    <string name="sync_status_disconnected_hint">Tasks are saved on this device. Connect to sync with your other devices.</string>
+    <string name="sync_status_syncing">Syncing</string>
+    <string name="sync_status_syncing_hint">Exchanging changes with your sync service.</string>
+    <string name="sync_status_synced">Up to date</string>
+    <string name="sync_status_synced_hint">This device matches the last confirmed server state. Other devices may still be offline.</string>
+    <string name="sync_status_conflict">Resolve conflicts</string>
+    <string name="sync_status_conflict_hint">Different versions need your choice. Your saved edits are still available.</string>
+    <string name="sync_status_offline">Offline</string>
+    <string name="sync_status_offline_hint">Your edits are saved here. Sync will retry when the connection returns.</string>
+    <string name="sync_status_pending">Changes waiting</string>
+    <string name="sync_status_pending_hint">Some local changes have not yet been confirmed by the server.</string>
+    <string name="sync_status_unconfirmed">Sync not confirmed</string>
+    <string name="sync_status_unconfirmed_hint">The sync engine has not confirmed server receipt. A connection alone does not mean your changes are up to date.</string>
+    <string name="sync_status_stale">Sync needs checking</string>
+    <string name="sync_status_stale_hint">The last confirmation is no longer current. Check again to know whether this device is up to date.</string>
+    <string name="sync_status_error">Sync failed</string>
+    <string name="sync_status_error_hint">Your local edits are saved. Retry, or check your connection in sync settings.</string>
+    <string name="sync_status_action">Sync status: %1$s</string>
+    <string name="sync_status_last_success">Last server confirmation</string>
+    <string name="sync_status_last_check">Last completed check</string>
+    <string name="sync_status_never">Not yet</string>
+    <string name="sync_status_pending_count">Pending changes: %1$d</string>
+    <string name="sync_status_pending_unknown">Pending changes: not available</string>
+    <string name="sync_status_conflicts">Conflicts: %1$d</string>
+    <string name="sync_status_check">Sync now</string>
+    <string name="sync_status_settings">Sync settings</string>
+    <string name="sync_status_connect">Connect</string>
+    <string name="sync_status_retry">Retry sync</string>
+    <string name="sync_status_resolve">Resolve conflicts</string>
+    <string name="sync_status_close">Close</string>
+</resources>

@@ -120,11 +120,13 @@ func TestLoginRateLimit(t *testing.T) {
 func TestLegacyOriginTransition(t *testing.T) {
 	g := setup(t)
 	g.legacyOrigin = "https://legacy.example"
+	g.migrationOrigin = "https://old-tasks.example"
 	for _, test := range []struct {
 		origin string
 		status int
 	}{
-		{g.origin, 200}, {g.legacyOrigin, 200}, {"", 403},
+		{g.origin, 200}, {g.legacyOrigin, 200}, {g.migrationOrigin, 200}, {"", 403},
+		{"https://old-tasks.example.attacker.example", 403},
 		{"https://legacy.example.attacker.example", 403}, {"https://attacker.example", 403},
 	} {
 		if r := request(g, "POST", "/api/state", test.origin, "valid", "{}"); r.Code != test.status {

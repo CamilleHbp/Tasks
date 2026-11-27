@@ -37,11 +37,13 @@ fun SettingsItem(
     modifier: Modifier = Modifier,
     @DrawableRes leadingIconRes: Int,
     title: String,
+    titleMaxLines: Int = 1,
     description: String? = null,
     onClick: () -> Unit = {}
 ) = SettingsItem(
     leadingIcon = painterResource(leadingIconRes),
     title = title,
+    titleMaxLines = titleMaxLines,
     description = description,
     trailingContent = null,
     onClick = onClick,
@@ -54,6 +56,7 @@ fun SettingsItem(
     modifier: Modifier = Modifier,
     leadingIcon: Painter? = null,
     title: String,
+    titleMaxLines: Int = 1,
     description: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     background: Color = VerveDoDefaults.Colors.Container,
@@ -82,6 +85,7 @@ fun SettingsItem(
         }
     },
     title = title,
+    titleMaxLines = titleMaxLines,
     description = description,
     trailingContent = trailingContent,
     background = background,
@@ -96,11 +100,13 @@ fun SettingsItem(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     title: String,
+    titleMaxLines: Int = 1,
     description: String? = null,
     onClick: () -> Unit = {}
 ) = SettingsItem(
     leadingIcon = leadingIcon,
     title = title,
+    titleMaxLines = titleMaxLines,
     description = description,
     trailingContent = null,
     onClick = onClick,
@@ -112,6 +118,7 @@ fun SettingsItem(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     title: String,
+    titleMaxLines: Int = 1,
     description: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     background: Color = VerveDoDefaults.Colors.Container,
@@ -129,6 +136,7 @@ fun SettingsItem(
         }
     },
     title = title,
+    titleMaxLines = titleMaxLines,
     description = description,
     trailingContent = trailingContent,
     background = background,
@@ -143,6 +151,7 @@ fun SettingsItem(
     modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     title: String,
+    titleMaxLines: Int = 1,
     description: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     background: Color = VerveDoDefaults.Colors.Container,
@@ -154,7 +163,7 @@ fun SettingsItem(
     headlineContent = {
         Text(
             text = title,
-            maxLines = 1,
+            maxLines = titleMaxLines,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface,

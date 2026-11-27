@@ -1,5 +1,14 @@
 package cn.super12138.todo.ui.widget.upcoming
 
+import androidx.compose.ui.test.hasContentDescription
+
+import androidx.compose.ui.test.hasScrollToNodeAction
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.performImeAction
+
 import android.content.Intent
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -101,14 +110,17 @@ class WidgetTaskCreationTest {
                 repository.insertTask(TaskEntity(content = seedTitle, category = tag, isCompleted = true, priority = 0f))
             }
             enterTitle()
-            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.tag_optional)))
+            compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription(context.getString(R.string.editor_find_tag)))
+            compose.onNodeWithContentDescription(context.getString(R.string.editor_find_tag)).performScrollTo().performClick()
+            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.editor_find_tag)))
                 .performTextReplacement(tag.take(16).uppercase())
             compose.waitUntil(10_000) {
                 compose.onAllNodes(hasText(tag) and !hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()
             }
-            compose.onNode(hasText(tag) and !hasSetTextAction()).performClick()
+            compose.onNode(hasText(tag) and hasAnyAncestor(hasTestTag("editor-tags-options"))).performScrollTo().performClick().assertIsSelected()
             scenario.recreate()
-            compose.onNodeWithContentDescription(context.getString(R.string.tag_remove, tag)).assertExists()
+            compose.onNode(hasText(tag) and hasAnyAncestor(hasTestTag("editor-tags-options"))).assertIsSelected()
+            compose.onNodeWithText(context.getString(R.string.action_confirm)).performClick()
             save()
             compose.waitUntil(10_000) { scenario.state == androidx.lifecycle.Lifecycle.State.DESTROYED }
             val task = runBlocking { repository.getAllTasks().first().single { it.content == title } }
@@ -121,10 +133,12 @@ class WidgetTaskCreationTest {
         withEditor("") { scenario, _ ->
             runBlocking { repository.insertTask(TaskEntity(content = seedTitle, category = tag, priority = 0f)) }
             enterTitle()
-            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.tag_optional)))
+            compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription(context.getString(R.string.editor_find_tag)))
+            compose.onNodeWithContentDescription(context.getString(R.string.editor_find_tag)).performScrollTo().performClick()
+            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.editor_find_tag)))
                 .performTextReplacement("  ${tag.uppercase()}  ")
-            // Dismiss the suggestion popup by returning to the title before saving.
-            compose.onNode(hasSetTextAction() and hasText(title)).performClick()
+            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.editor_find_tag))).performImeAction()
+            compose.onNodeWithText(context.getString(R.string.action_confirm)).performClick()
             save()
             compose.waitUntil(10_000) { scenario.state == androidx.lifecycle.Lifecycle.State.DESTROYED }
             val task = runBlocking { repository.getAllTasks().first().single { it.content == title } }
@@ -135,13 +149,17 @@ class WidgetTaskCreationTest {
     @Test fun detailsMultipleTagsAndDefaultTimeSurviveRecreation() {
         withEditor("Work") { scenario, _ ->
             enterTitle()
+            compose.onNodeWithText(context.getString(R.string.editor_add_details)).performScrollTo().performClick()
             compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.task_details)))
                 .performTextInput("Bring the drawings\nConfirm the measurements")
-            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.tag_optional)))
+            compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription(context.getString(R.string.editor_find_tag)))
+            compose.onNodeWithContentDescription(context.getString(R.string.editor_find_tag)).performScrollTo().performClick()
+            compose.onNode(hasSetTextAction() and hasText(context.getString(R.string.editor_find_tag)))
                 .performTextReplacement("Home")
-            compose.onNodeWithText(context.getString(R.string.tag_add)).performScrollTo().performClick()
+            compose.onNodeWithText(context.getString(R.string.editor_assign_tag, "Home")).performScrollTo().performClick()
             scenario.recreate()
-            compose.onNodeWithContentDescription(context.getString(R.string.tag_remove, "Home")).assertExists()
+            compose.onNode(hasText("Home") and hasAnyAncestor(hasTestTag("editor-tags-options"))).assertIsSelected()
+            compose.onNodeWithText(context.getString(R.string.action_confirm)).performClick()
             save()
             compose.waitUntil(10_000) { scenario.state == androidx.lifecycle.Lifecycle.State.DESTROYED }
             val task = runBlocking { repository.getAllTasks().first().single { it.content == title } }

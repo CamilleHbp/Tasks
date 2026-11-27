@@ -302,7 +302,7 @@ export function Settings({
         </>
       )}
       <h3>{t("about")}</h3>
-      <p>VerveTwoDo Web · 1.0.0</p>
+      <p>{t("appName")} Web · 1.0.0</p>
       <p className="hint">{t("offlineReady")}</p>
       <div className="settings-actions">
         <button

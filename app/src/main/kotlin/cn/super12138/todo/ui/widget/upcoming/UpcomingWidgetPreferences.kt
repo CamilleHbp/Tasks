@@ -10,6 +10,33 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import cn.super12138.todo.R
 
 object UpcomingWidgetPreferences {
+    val viewKey = stringPreferencesKey("task_view_v1")
+    val groupsKey = stringSetPreferencesKey("task_view_collapsed_groups")
+
+    fun configuration(preferences: Preferences): cn.super12138.todo.logic.model.TaskViewConfig {
+        val saved = cn.super12138.todo.logic.model.TaskViewConfig.decode(preferences[viewKey])
+        val legacy = collapsedSections(preferences).map { section ->
+            when (section) {
+                "Today" -> "day:" + java.time.LocalDate.now()
+                "Tomorrow" -> "day:" + java.time.LocalDate.now().plusDays(1)
+                "ThisWeek" -> "this-week"
+                "NextWeek" -> "next-week"
+                else -> section.lowercase()
+            }
+        }.toSet()
+        return saved.copy(sort = sort(preferences), tags = categories(preferences),
+            controlsVisible = preferences[controlsKey] ?: false,
+            collapsed = preferences[groupsKey] ?: legacy)
+    }
+
+    fun setConfiguration(preferences: MutablePreferences, config: cn.super12138.todo.logic.model.TaskViewConfig) {
+        preferences[viewKey] = config.encode()
+        preferences[sortKey] = config.sort.name
+        setCategories(preferences, config.tags)
+        preferences[controlsKey] = config.controlsVisible
+        preferences[groupsKey] = config.collapsed
+    }
+
     val sortKey = stringPreferencesKey("upcoming_sort")
     val categoryKey = stringPreferencesKey("upcoming_category") // Legacy single-tag filter.
     val categoriesKey = stringSetPreferencesKey("upcoming_categories")
@@ -49,6 +76,11 @@ object UpcomingWidgetPreferences {
     }
 
     fun replaceTag(preferences: MutablePreferences, old: String, replacement: String?) {
+        val config = configuration(preferences)
+        setConfiguration(preferences, config.copy(
+            tags = config.tags.mapNotNull { if (it == old) replacement else it }.toSet(),
+            tagOrder = config.tagOrder.mapNotNull { if (it == old) replacement else it }.distinct(),
+            collapsed = config.collapsed.mapNotNull { if (it == "tag:$old") replacement?.let { name -> "tag:$name" } else it }.toSet()))
         val selected = categories(preferences)
         if (old in selected) setCategories(preferences,
             selected.mapNotNull { if (it == old) replacement else it }.toSet())

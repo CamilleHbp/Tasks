@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tag_tasks_empty">Aucune tâche pour le moment</string>
+    <string name="tag_favorite_add">Ajouter aux favoris</string>
+    <string name="tag_favorite_remove">Retirer des favoris</string>
+    <string name="tag_favorite_state">Favori</string>
+    <string name="tag_cloud_hint">Appuyez longuement pour afficher les actions. Faites glisser une étiquette pour la déplacer.</string>
+    <string name="tag_reset_order">Rétablir l’ordre alphabétique</string>
+    <string name="tag_cloud_hint_dismiss">Masquer l’astuce</string>
+    <string name="tag_move_earlier">Déplacer avant</string>
+    <string name="tag_move_later">Déplacer après</string>
+    <string name="tag_search">Rechercher des étiquettes</string>
+    <string name="tag_search_empty">Aucune étiquette correspondante</string>
+    <string name="tag_search_clear">Effacer la recherche</string>
+    <string name="tag_open_tasks">Afficher les tâches</string>
+    <string name="tag_actions">Actions de l’étiquette</string>
+    <string name="tag_pill_description">%1$s, %2$s</string>
+</resources>

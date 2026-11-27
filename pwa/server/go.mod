@@ -1,8 +1,8 @@
-module github.com/CamilleHbp/VerveTwoDo/pwa/server
+module github.com/CamilleHbp/Tasks/pwa/server
 
 go 1.27.0
 
-require github.com/CamilleHbp/VerveTwoDo/sync-engine v0.0.0
+require github.com/CamilleHbp/Tasks/sync-engine v0.0.0
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
@@ -92,4 +92,4 @@ require (
 	storj.io/drpc v1.0.0 // indirect
 )
 
-replace github.com/CamilleHbp/VerveTwoDo/sync-engine => ../../sync-engine
+replace github.com/CamilleHbp/Tasks/sync-engine => ../../sync-engine

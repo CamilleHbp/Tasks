@@ -11,7 +11,7 @@ export const widgetDownloads: Record<WidgetPlatform, string> = {
 
 // curl downloads carry no quarantine flag, so this installs without a Gatekeeper approval.
 export const widgetInstallCommand =
-  "curl -fsSL https://todo.camille.studio/install-widgets-macos.sh | sh";
+  "curl -fsSL https://tasks.camille.studio/install-widgets-macos.sh | sh";
 
 type Hints = {
   platform?: string;

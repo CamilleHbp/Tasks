@@ -1,4 +1,4 @@
-module github.com/CamilleHbp/VerveTwoDo/sync-engine
+module github.com/CamilleHbp/Tasks/sync-engine
 
 go 1.27.0
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tag_tasks_empty">No tasks yet</string>
+    <string name="tag_favorite_add">Add to favourites</string>
+    <string name="tag_favorite_remove">Remove from favourites</string>
+    <string name="tag_favorite_state">Favourite</string>
+    <string name="tag_cloud_hint">Long press for actions. Hold and drag a tag to reorder.</string>
+    <string name="tag_reset_order">Restore alphabetical order</string>
+    <string name="tag_cloud_hint_dismiss">Dismiss hint</string>
+    <string name="tag_move_earlier">Move earlier</string>
+    <string name="tag_move_later">Move later</string>
+    <string name="tag_search">Search tags</string>
+    <string name="tag_search_empty">No matching tags</string>
+    <string name="tag_search_clear">Clear search</string>
+    <string name="tag_open_tasks">Show tasks</string>
+    <string name="tag_actions">Tag actions</string>
+    <string name="tag_pill_description">%1$s, %2$s</string>
+</resources>

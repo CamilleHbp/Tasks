@@ -13,6 +13,9 @@ sealed class VerveDoScreen : NavKey {
     data object Tasks : VerveDoScreen()
 
     @Serializable
+    data class TaskCollection(val configuration: String, val tagScope: String? = null) : VerveDoScreen()
+
+    @Serializable
     data class TaskDetail(val taskId: Int) : VerveDoScreen()
 
     @Serializable
@@ -33,9 +36,6 @@ sealed class VerveDoScreen : NavKey {
         data object Data : Settings()
 
         @Serializable
-        data object DataCategory : Settings()
-
-        @Serializable
         data object About : Settings()
 
         // @Serializable
@@ -54,7 +54,7 @@ sealed class VerveDoScreen : NavKey {
     @Serializable
     sealed class Editor : VerveDoScreen() {
         @Serializable
-        data object Add : Editor()
+        data class Add(val initialTag: String = "") : Editor()
 
         @Serializable
         data class Edit(val task: TaskEntity) : Editor()

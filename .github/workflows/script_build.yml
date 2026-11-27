@@ -1,4 +1,4 @@
-name: VerveTwoDo Script Build
+name: Tasks Script Build
 
 on:
   push:
@@ -37,5 +37,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: VerveTwoDo Script
+          name: Tasks Script
           path: ./script/updateVersionCode.js

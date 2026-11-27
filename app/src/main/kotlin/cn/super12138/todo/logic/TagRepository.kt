@@ -25,9 +25,28 @@ class TagRepository(
     private val mutations = Mutex()
     private val _changes = MutableSharedFlow<TagChange>(extraBufferCapacity = 16)
     val changes = _changes.asSharedFlow()
+    val icons = settingsRepository.tagIconsFlow
+    val favorites = settingsRepository.favoriteTagsFlow.distinctUntilChanged()
 
-    val tags = combine(settingsRepository.categoriesFlow, taskRepository.getCategories()) { presets, used ->
-        tagCatalog(presets, used)
+    suspend fun setFavorite(tag: String, favorite: Boolean) = mutations.withLock {
+        require(tag in tags.first())
+        settingsRepository.setTagFavorite(tag, favorite)
+    }
+
+    suspend fun reorderFavorites(order: List<String>) = mutations.withLock {
+        settingsRepository.reorderFavoriteTags(order)
+    }
+
+    val manualOrder = settingsRepository.tagOrderFlow.distinctUntilChanged()
+
+    suspend fun setOrder(order: List<String>) = mutations.withLock {
+        val current = tags.first().toSet()
+        settingsRepository.setTagOrder(order.filter { it in current }.distinct())
+    }
+
+    val tags = combine(settingsRepository.categoriesFlow, taskRepository.getCategories(), manualOrder) { presets, used, order ->
+        val catalog = tagCatalog(presets, used)
+        (order.filter { it in catalog } + catalog).distinct()
     }.distinctUntilChanged()
 
     val usageCounts = taskRepository.getAllTasks().map { tasks ->
@@ -40,28 +59,28 @@ class TagRepository(
         mutations.withLock { settingsRepository.ensureTagColors(tags.first()) }
     }
 
-    suspend fun save(old: String?, input: String, color: Int): String = mutations.withLock {
+    suspend fun save(old: String?, input: String, color: Int, icon: String? = null): String = mutations.withLock {
         val name = if (input == old) input else input.trim()
         require(name.isNotBlank())
         if (name != old && tags.first().any { it != old && it.trim().equals(name, ignoreCase = true) }) {
             throw DuplicateTagException()
         }
+        settingsRepository.updateTag(old, name, color, icon)
         if (old != null && old != name) taskRepository.replaceTag(old, name)
-        settingsRepository.updateTag(old, name, color)
         if (old != null && old != name) _changes.emit(TagChange(old, name))
         name
     }
 
     suspend fun delete(tag: String) = mutations.withLock {
-        taskRepository.replaceTag(tag, null)
         settingsRepository.updateTag(tag, null, null)
+        taskRepository.replaceTag(tag, null)
         _changes.emit(TagChange(tag, null))
     }
 }
 
 internal fun tagCatalog(presets: List<String>, used: List<String>): List<String> =
     (presets + used).filter { it.isNotBlank() }.distinct()
-        .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.trim() })
+        .sortedWith(compareBy(java.text.Collator.getInstance().apply { strength = java.text.Collator.SECONDARY }) { it.trim() })
 
 /** Prefer an exact existing identity, then reuse its spelling instead of creating a case variant. */
 internal fun resolveTag(input: String, existing: List<String>): String {

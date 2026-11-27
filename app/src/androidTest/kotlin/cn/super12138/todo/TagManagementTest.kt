@@ -22,7 +22,6 @@ import cn.super12138.todo.logic.datastore.DataStoreManager
 import cn.super12138.todo.ui.components.TagManagementDialog
 import cn.super12138.todo.ui.components.EditableTag
 import cn.super12138.todo.ui.pages.editor.EditorViewModel
-import cn.super12138.todo.ui.pages.settings.SettingsDataCategory
 import cn.super12138.todo.ui.pages.settings.SettingsDataCategoryViewModel
 import cn.super12138.todo.ui.theme.VerveDoTheme
 import cn.super12138.todo.ui.widget.upcoming.UpcomingWidgetPreferences
@@ -165,14 +164,13 @@ class TagManagementTest {
         assertEquals(listOf("Household", "Garden"), runBlocking { saved(1).taskTags })
     }
 
-    @Test fun managerShowsCountsAndDeletionRequiresConfirmation() {
+    @Test fun editorDeletionRequiresConfirmation() {
+        var visible by mutableStateOf(true)
         compose.setContent { VerveDoTheme(dynamicColor = false, animate = false) {
             SystemBars(false)
-            SettingsDataCategory(onNavigateUp = {}, viewModel = model)
+            if (visible) TagManagementDialog("Home", { visible = false }, viewModel = model)
         } }
         compose.waitUntil(5_000) { model.uiState.value.categories.size == 3 }
-        capture("manager-light")
-        compose.onNodeWithText("Home").performClick()
         compose.onNodeWithText(context.getString(R.string.tag_delete)).performScrollTo().performClick()
         compose.onNodeWithText(context.getString(R.string.tag_delete_title, "Home")).assertExists()
         capture("delete")
@@ -180,8 +178,22 @@ class TagManagementTest {
         assertEquals(2, runBlocking { tags.usageCounts.first()["Home"] })
         compose.onNodeWithText(context.getString(R.string.tag_delete)).performScrollTo().performClick()
         compose.onNodeWithText(context.getString(R.string.tag_delete)).performClick()
-        compose.waitUntil(5_000) { "Home" !in model.uiState.value.categories }
+        compose.waitUntil(5_000) { !visible }
         assertEquals(2, runBlocking { repository.getAllTasks().first().size })
+    }
+
+    @Test fun expandedIconLibraryCanSaveLastChoice() {
+        compose.setContent {
+            VerveDoTheme(dynamicColor = false, animate = false) {
+                TagManagementDialog("Home", {}, viewModel = model)
+            }
+        }
+        compose.waitUntil(5_000) { model.uiState.value.categories.isNotEmpty() }
+        compose.onNodeWithContentDescription(context.getString(R.string.category_icon_rock))
+            .performScrollTo().performClick().assertIsSelected()
+        capture("expanded-library-last-choice")
+        compose.onNodeWithText(context.getString(R.string.action_save)).performClick()
+        compose.waitUntil(5_000) { model.uiState.value.tagIcons["Home"] == "rock" }
     }
 
     @Test fun darkLargeTextKeepsDialogActionsReachable() {

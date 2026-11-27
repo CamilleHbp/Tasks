@@ -187,6 +187,11 @@ export function validateTask(t: Task) {
     )
   )
     throw Error("invalidChecklist");
+  validateSchedule(t);
+  for (const key of ["completed", "deleted", "retracted"] as const)
+    if (typeof t[key] !== "boolean") throw Error("invalidTask");
+}
+export function validateSchedule(t: Task) {
   if (typeof t.dueDate !== "string" || (t.dueDate && !validDate(t.dueDate)))
     throw Error("invalidDate");
   if (t.dueTime) {
@@ -210,8 +215,6 @@ export function validateTask(t: Task) {
       !validDate(t.recurrence.anchor))
   )
     throw Error("invalidRecurrence");
-  for (const key of ["completed", "deleted", "retracted"] as const)
-    if (typeof t[key] !== "boolean") throw Error("invalidTask");
 }
 export function validateTags(tags: Tag[]) {
   if (
@@ -382,7 +385,7 @@ export function plan(d: Data, changed: Task[], tags: Tag[]) {
         field,
         value: v,
         replaces: old?.fields[field]?.map((v) => v.id) || [],
-        source: { id: d.source, name: "VerveTwoDo Web", platform: "linux" },
+        source: { id: d.source, name: "Tasks Web", platform: "linux" },
       });
     }
   }
@@ -531,7 +534,7 @@ export function resolve(
     field,
     value: selected,
     replaces: expected,
-    source: { id: d.source, name: "VerveTwoDo Web", platform: "linux" },
+    source: { id: d.source, name: "Tasks Web", platform: "linux" },
   };
   d.outbox.push(op);
   project(d, d.records);

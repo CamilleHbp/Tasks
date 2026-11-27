@@ -23,7 +23,7 @@ fun TagColorStrokes(tags: List<String>, colors: Map<String, Int>) {
         tags.chunked(6).forEach { group ->
             Row(GlanceModifier.padding(vertical = 1.dp)) {
                 group.forEach { tag ->
-                    Spacer(GlanceModifier.width(3.dp).height(20.dp).background(Color(resolved.getValue(tag))))
+                    Spacer(GlanceModifier.width(3.dp).height(32.dp).background(Color(resolved.getValue(tag))))
                     Spacer(GlanceModifier.width(2.dp))
                 }
             }

@@ -3,7 +3,7 @@ package cn.super12138.todo.ui.activities
 import android.os.Bundle
 import android.content.Intent
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,12 +27,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavKey
 import cn.super12138.todo.constants.Constants
 import cn.super12138.todo.logic.TaskRepository
+import cn.super12138.todo.logic.model.TaskViewConfig
 import cn.super12138.todo.ui.VerveDoDefaults
 import cn.super12138.todo.ui.components.Confetti
 import cn.super12138.todo.ui.navigation.TopLevelBackStack
 import cn.super12138.todo.ui.navigation.TopNavigation
 import cn.super12138.todo.ui.navigation.VerveDoDestinations
 import cn.super12138.todo.ui.navigation.VerveDoScreen
+import cn.super12138.todo.ui.navigation.openWidgetCollection
 import cn.super12138.todo.ui.theme.VerveDoTheme
 import cn.super12138.todo.utils.VibrationUtils
 import cn.super12138.todo.utils.configureEdgeToEdge
@@ -47,13 +49,22 @@ import org.koin.androidx.scope.activityRetainedScope
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.scope.Scope
 
-class MainActivity : ComponentActivity(), AndroidScopeComponent {
+class MainActivity : AppCompatActivity(), AndroidScopeComponent {
     override val scope: Scope by activityRetainedScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         configureEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            val prefs = cn.super12138.todo.logic.reminders.TaskReminders.preferences(this)
+            if (!prefs.getBoolean("permissionAsked", false)) {
+                prefs.edit().putBoolean("permissionAsked", true).apply()
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 71)
+            }
+        }
+        lifecycleScope.launch { updateTaskWidgets(this@MainActivity) }
 
         val backStack: TopLevelBackStack<NavKey> = get()
         if (savedInstanceState == null) openWidgetTask(intent)
@@ -112,6 +123,7 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
             }
 
             VerveDoTheme(
+                color = if (appearanceUiState.dynamicColor) null else androidx.compose.ui.graphics.Color(appearanceUiState.themeColor),
                 darkTheme = isDark,
                 pureBlackMode = appearanceUiState.pureBlackMode,
                 style = appearanceUiState.paletteStyle,
@@ -157,10 +169,12 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
                         containerColor = VerveDoDefaults.Colors.Background,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        TopNavigation(
-                            backStack = backStack,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
+                            androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
+                                TopNavigation(backStack = backStack, modifier = Modifier.fillMaxSize())
+                            }
+                            cn.super12138.todo.ui.components.AppSyncAttention()
+                        }
                     }
                     Confetti(
                         visible = isConfettiVisible,
@@ -179,6 +193,12 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
     }
 
     private fun openWidgetTask(intent: Intent) {
+        intent.getStringExtra(EXTRA_WIDGET_CONFIGURATION)?.let { configuration ->
+            intent.removeExtra(EXTRA_WIDGET_CONFIGURATION)
+            val stack: TopLevelBackStack<NavKey> = get()
+            stack.openWidgetCollection(TaskViewConfig.decode(configuration))
+        }
+
         val taskId = intent.getIntExtra(EXTRA_WIDGET_TASK_ID, -1)
         if (taskId < 0) return
         intent.removeExtra(EXTRA_WIDGET_TASK_ID)
@@ -187,7 +207,6 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
             val backStack: TopLevelBackStack<NavKey> = get()
             val current = backStack.backStack.lastOrNull() as? VerveDoScreen.TaskDetail
             if (current?.taskId != taskId) {
-                backStack.addTopLevel(VerveDoScreen.Tasks)
                 backStack.add(VerveDoScreen.TaskDetail(task.id))
             }
         }
@@ -195,13 +214,14 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
 
     companion object {
         const val EXTRA_WIDGET_TASK_ID = "widget_task_id"
+        const val EXTRA_WIDGET_CONFIGURATION = "task_view_configuration"
     }
 
     override fun onStop() {
         super.onStop()
         lifecycleScope.launch {
-            // TODO: 更新逻辑还需优化，最好是在update方法里执行
-            updateTaskWidgets(applicationContext)
+            // Also refresh settings and bulk restores that bypass TaskRepository.
+            (application as cn.super12138.todo.VerveDoApp).refreshTaskWidgets()
         }
     }
 }

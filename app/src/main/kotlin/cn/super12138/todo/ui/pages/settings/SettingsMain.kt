@@ -15,13 +15,24 @@ fun SettingsMain(
     toInterfacePage: () -> Unit,
     toDataPage: () -> Unit,
     toAboutPage: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null
 ) {
     TopAppBarScaffold(
         title = stringResource(R.string.page_settings),
+        navigationIcon = {
+            if (onBack != null) androidx.compose.material3.IconButton(onClick = onBack) {
+                androidx.compose.material3.Icon(androidx.compose.ui.res.painterResource(R.drawable.ic_arrow_back),
+                    stringResource(R.string.action_back))
+            }
+        },
         modifier = modifier
     ) {
         SettingsContainer(Modifier.fillMaxSize()) {
+            item { SettingsLanguage() }
+            item { SettingsSync() }
+            item { SettingsReminders() }
+
             item {
                 SettingsItem(
                     leadingIconRes = R.drawable.ic_palette,

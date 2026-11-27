@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scheduling_title">Dates et heures</string>
+    <string name="scheduling_time_picker">Sélecteur d’heure par défaut</string>
+    <string name="scheduling_date_picker">Sélecteur de date par défaut</string>
+    <string name="scheduling_clock">Cadran</string>
+    <string name="scheduling_keyboard">Clavier</string>
+    <string name="scheduling_calendar">Calendrier</string>
+    <string name="scheduling_week_start">Premier jour de la semaine</string>
+    <string name="scheduling_follow_system">Selon la langue de l’application</string>
+    <string name="scheduling_week_start_hint">S’applique aux calendriers, aux groupes hebdomadaires et à La semaine prochaine. Ce raccourci choisit le premier jour de la semaine suivante.</string>
+</resources>

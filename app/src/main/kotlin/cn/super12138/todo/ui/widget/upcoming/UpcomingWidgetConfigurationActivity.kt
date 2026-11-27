@@ -8,8 +8,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,12 +54,14 @@ import cn.super12138.todo.R
 import cn.super12138.todo.logic.SettingsRepository
 import cn.super12138.todo.logic.TaskRepository
 import cn.super12138.todo.ui.theme.VerveDoTheme
+import cn.super12138.todo.utils.isDark
 import cn.super12138.todo.utils.configureEdgeToEdge
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 
-class UpcomingWidgetConfigurationActivity : ComponentActivity() {
+class UpcomingWidgetConfigurationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         configureEdgeToEdge()
@@ -85,13 +89,15 @@ class UpcomingWidgetConfigurationActivity : ComponentActivity() {
                     PreferencesGlanceStateDefinition,
                     glanceId
                 )
-                val initialSort = UpcomingWidgetPreferences.sort(preferences)
-                val initialCategories = UpcomingWidgetPreferences.categories(preferences)
+                val initialConfig = UpcomingWidgetPreferences.configuration(preferences)
+                val initialCategories = initialConfig.tags
                 val settingsRepository: SettingsRepository = get()
                 val taskRepository: TaskRepository = get()
                 val tasksFlow = taskRepository.getAllTasks()
 
+                val initialAppearance = settingsRepository.appearanceFlow.first()
                 setContent {
+                    val appearance by settingsRepository.appearanceFlow.collectAsStateWithLifecycle(initialAppearance)
                     val categories by settingsRepository.categoriesFlow.collectAsStateWithLifecycle(emptyList())
                     val tasks by tasksFlow.collectAsStateWithLifecycle(emptyList())
                     val tags = remember(categories, tasks, initialCategories) {
@@ -100,20 +106,27 @@ class UpcomingWidgetConfigurationActivity : ComponentActivity() {
                     }
                     var saving by remember { mutableStateOf(false) }
 
-                    VerveDoTheme {
+                    VerveDoTheme(
+                        color = if (appearance.dynamicColor) null else androidx.compose.ui.graphics.Color(appearance.themeColor),
+                        dynamicColor = appearance.dynamicColor,
+                        darkTheme = appearance.darkMode.isDark(),
+                        pureBlackMode = appearance.pureBlackMode,
+                        style = appearance.paletteStyle,
+                        contrastLevel = appearance.contrastLevel,
+                        specVersion = if (appearance.previewColorSystem) com.kyant.m3color.dynamiccolor.ColorSpec.SpecVersion.SPEC_2025
+                            else com.kyant.m3color.dynamiccolor.ColorSpec.SpecVersion.SPEC_2021
+                    ) {
                         WidgetConfiguration(
-                            initialSort = initialSort,
-                            initialCategories = initialCategories,
+                            initialConfig = initialConfig,
                             tags = tags,
                             saving = saving,
                             onCancel = { finish() },
-                            onSave = { sort, category ->
+                            onSave = { config ->
                                 saving = true
                                 lifecycleScope.launch {
                                     try {
                                         updateAppWidgetState(this@UpcomingWidgetConfigurationActivity, glanceId) {
-                                            it[UpcomingWidgetPreferences.sortKey] = sort.name
-                                            UpcomingWidgetPreferences.setCategories(it, category)
+                                            UpcomingWidgetPreferences.setConfiguration(it, config)
                                             it.remove(UpcomingWidgetPreferences.panelKey)
                                         }
                                         UpcomingTaskWidget().update(this@UpcomingWidgetConfigurationActivity, glanceId)
@@ -147,108 +160,31 @@ class UpcomingWidgetConfigurationActivity : ComponentActivity() {
 
 @Composable
 private fun WidgetConfiguration(
-    initialSort: UpcomingTaskSort,
-    initialCategories: Set<String>,
+    initialConfig: cn.super12138.todo.logic.model.TaskViewConfig,
     tags: List<String>,
     saving: Boolean,
     onCancel: () -> Unit,
-    onSave: (UpcomingTaskSort, Set<String>) -> Unit
+    onSave: (cn.super12138.todo.logic.model.TaskViewConfig) -> Unit
 ) {
-    var sort by rememberSaveable { mutableStateOf(initialSort) }
-    var category by rememberSaveable { mutableStateOf<List<String>>(initialCategories.toList()) }
-
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
+    var encoded by rememberSaveable { mutableStateOf(initialConfig.encode()) }
+    val config = cn.super12138.todo.logic.model.TaskViewConfig.decode(encoded)
+    Scaffold(contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-                modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp)
-            ) {
-                TextButton(onClick = onCancel, enabled = !saving) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-                Button(onClick = { onSave(sort, category.toSet()) }, enabled = !saving) {
-                    Text(stringResource(R.string.action_save))
-                }
+            Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)) {
+                TextButton(onClick = onCancel, enabled = !saving) { Text(stringResource(R.string.action_cancel)) }
+                Button(onClick = { onSave(config) }, enabled = !saving) { Text(stringResource(R.string.action_save)) }
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)
-        ) {
-            item {
-                Text(
-                    text = stringResource(R.string.widget_settings),
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
-                )
-                Text(
-                    text = stringResource(R.string.widget_upcoming_description),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = stringResource(R.string.pref_sorting_method),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                )
-                Column(Modifier.selectableGroup()) {
-                    UpcomingTaskSort.entries.forEach { option ->
-                        ConfigurationOption(
-                            label = stringResource(option.labelRes()),
-                            selected = sort == option,
-                            enabled = !saving,
-                            onClick = { sort = option }
-                        )
-                    }
-                }
-                Text(
-                    text = stringResource(R.string.widget_filter_tag),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                )
-                Text(
-                    text = stringResource(R.string.widget_tags_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-            item {
-                TagOption(stringResource(R.string.widget_all_tags), category.isEmpty(), !saving) {
-                    category = emptyList()
-                }
-                TagOption(stringResource(R.string.widget_no_tag), "" in category, !saving) {
-                    category = if ("" in category) category - "" else category + ""
-                }
-            }
-            items(tags, key = { it }) { tag ->
-                TagOption(tag, tag in category, !saving) {
-                    category = if (tag in category) category - tag else category + tag
-                }
-            }
+        Column(Modifier.fillMaxSize().padding(padding)
+            .verticalScroll(rememberScrollState()).padding(24.dp)) {
+            Text(stringResource(R.string.widget_settings), style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 12.dp))
+            Text(stringResource(R.string.view_widget_description), style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 20.dp))
+            cn.super12138.todo.ui.pages.collections.TaskViewOptions(config, tags,
+                onChange = { if (!saving) encoded = it.encode() }, allowMode = true)
         }
-    }
-}
-
-@Composable
-private fun ConfigurationOption(label: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp)
-            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
-            .padding(vertical = 8.dp)
-    ) {
-        RadioButton(selected = selected, enabled = enabled, onClick = null)
-        Text(text = label, modifier = Modifier.padding(start = 12.dp))
-    }
-}
-
-@Composable
-private fun TagOption(label: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp)
-            .selectable(selected, enabled = enabled, role = Role.Checkbox, onClick = onClick)
-            .padding(vertical = 8.dp)) {
-        Checkbox(checked = selected, enabled = enabled, onCheckedChange = null)
-        Text(label, modifier = Modifier.padding(start = 12.dp))
     }
 }

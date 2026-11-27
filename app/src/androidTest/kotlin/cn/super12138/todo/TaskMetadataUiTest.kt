@@ -6,6 +6,10 @@ import android.appwidget.AppWidgetHostView
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
+import android.content.Context
+import android.content.res.Configuration
+import android.graphics.Rect
+import android.os.LocaleList
 import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
@@ -33,6 +37,9 @@ import cn.super12138.todo.logic.SettingsRepository
 import cn.super12138.todo.logic.TagRepository
 import cn.super12138.todo.logic.TaskRepository
 import cn.super12138.todo.logic.database.TaskEntity
+import cn.super12138.todo.logic.model.TaskViewConfig
+import cn.super12138.todo.logic.model.TaskViewMode
+import cn.super12138.todo.ui.widget.upcoming.UpcomingWidgetPreferences
 import cn.super12138.todo.ui.components.DueTimeDialog
 import cn.super12138.todo.ui.pages.editor.EditorViewModel
 import cn.super12138.todo.ui.pages.editor.TaskEditorPage
@@ -40,6 +47,7 @@ import cn.super12138.todo.ui.pages.settings.components.category.CategoryPromptDi
 import cn.super12138.todo.ui.theme.VerveDoTheme
 import cn.super12138.todo.ui.widget.upcoming.UpcomingTaskWidget
 import cn.super12138.todo.ui.widget.upcoming.UpcomingTaskWidgetReceiver
+import cn.super12138.todo.ui.widget.refreshWidgetLanguage
 import cn.super12138.todo.utils.ConfettiController
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -51,6 +59,7 @@ import org.koin.core.context.GlobalContext
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class TaskMetadataUiTest {
     @get:Rule val compose = createComposeRule()
@@ -60,17 +69,22 @@ class TaskMetadataUiTest {
     private val settings get() = GlobalContext.get().get<SettingsRepository>()
     private val ids = mutableSetOf<Int>()
 
-    @After fun cleanUp() = runBlocking { if (ids.isNotEmpty()) repo.deleteTaskFromIds(ids) }
+    @After fun cleanUp() = runBlocking {
+        refreshWidgetLanguage(context)
+        if (ids.isNotEmpty()) repo.deleteTaskFromIds(ids)
+    }
 
     @Test fun editKeepsDetailsAndAllowsRemovingTagsAndTime() {
         val task = seed("Review the kitchen drawings", 0)
         val model = EditorViewModel(task, repo, settings, GlobalContext.get().get<TagRepository>(), ConfettiController())
         var saved = false
         compose.setContent { VerveDoTheme { TaskEditorPage(task = task, viewModel = model, onSaved = { saved = true }) } }
-        compose.onNodeWithText(context.getString(R.string.remove_due_time)).performScrollTo()
+        compose.onNodeWithTag("editor-date-time").performScrollTo().performClick()
+        compose.onNodeWithTag("editor-include-time").performScrollTo()
         capture("editor")
-        compose.onNodeWithText(context.getString(R.string.remove_due_time)).performClick()
-        compose.onNodeWithContentDescription(context.getString(R.string.tag_remove, "Home")).performScrollTo().performClick()
+        compose.onNodeWithTag("editor-include-time").performClick()
+        compose.onNodeWithText(context.getString(R.string.action_confirm)).performClick()
+        compose.onNode(hasText("Home") and hasAnyAncestor(hasTestTag("editor-tags-preview"))).performScrollTo().performClick()
         compose.onNodeWithContentDescription(context.getString(R.string.action_save)).performClick()
         compose.waitUntil(10_000) { saved }
         val updated = runBlocking { repo.getAllTasks().first().single { it.id == task.id } }
@@ -107,8 +121,69 @@ class TaskMetadataUiTest {
         seed("Review the kitchen drawings", 0)
         seed("Book the train tickets", 1)
         seed("Prepare the autumn planting", 12)
+        val host = showWidget(TaskViewConfig())
+        capture("widget")
+        instrumentation.runOnMainSync {
+            assertFalse(host.texts().any { it.contains("Widget-hidden subtask") })
+            assertTrue("Today heading must remain visible", host.visibleTexts().contains(context.getString(R.string.time_today)))
+            val titleTarget = requireNotNull(host.clickableTextTarget(context.getString(R.string.view_agenda)))
+            assertTrue("Widget title must have a 48dp touch target", titleTarget.height >= 48 * context.resources.displayMetrics.density)
+        }
+    }
+
+    @Test fun tagWidgetRepeatsMultiTagTaskWithVisibleHeaders() {
+        val task = seed("Compare the kitchen finishes", 0)
+        val host = showWidget(TaskViewConfig(mode = TaskViewMode.Tags, tags = setOf("Work", "Home"), tagOrder = listOf("Work", "Home")))
+        capture("widget-tags")
+        instrumentation.runOnMainSync {
+            assertEquals(2, host.texts().count { it == task.content })
+            assertTrue(host.visibleTexts().containsAll(listOf("Work", "Home")))
+        }
+    }
+
+    @Test fun compactEnglishWidgetKeepsDateInline() = checkCompactWidget("en", DpSize(280.dp, 250.dp))
+
+    @Test fun narrowFrenchWidgetKeepsDateInline() = checkCompactWidget("fr", DpSize(240.dp, 180.dp))
+
+    private fun checkCompactWidget(language: String, size: DpSize) {
+        val localized = context.createConfigurationContext(Configuration(context.resources.configuration).apply {
+            setLocales(LocaleList.forLanguageTags(language))
+        })
+        val task = seed("Review the kitchen drawings", 0)
+        refreshWidgetLanguage(localized)
+        val host = showWidget(TaskViewConfig(), size, localized)
+        capture("widget-compact-$language")
+        instrumentation.runOnMainSync {
+            assertFalse("Filter summary must stay hidden until controls are opened",
+                host.texts().any { it.contains(localized.getString(R.string.widget_all_tags)) })
+            val title = requireNotNull(host.textView(localized.getString(R.string.time_today))) { host.texts().toString() }
+            val date = requireNotNull(host.textView(LocalDate.now().format(
+                DateTimeFormatter.ofPattern("EEE d MMM", localized.resources.configuration.locales[0]))))
+            val titleBounds = Rect().also { assertTrue(title.getGlobalVisibleRect(it)) }
+            val dateBounds = Rect().also { assertTrue(date.getGlobalVisibleRect(it)) }
+            assertTrue("The date must be beside Today", dateBounds.left >= titleBounds.right)
+            assertTrue("Today and its date must share one row", titleBounds.top < dateBounds.bottom && dateBounds.top < titleBounds.bottom)
+            assertEquals(1, title.lineCount)
+            assertEquals(1, date.lineCount)
+            assertEquals("The full date should fit at this width", 0, date.layout.getEllipsisCount(0))
+            val groupTarget = requireNotNull(host.clickableTextTarget(title.text.toString()))
+            assertTrue("Expanded heading should leave room for tasks", groupTarget.height <= 32 * context.resources.displayMetrics.density)
+            assertTrue("A task must remain visible in a short widget", host.visibleTexts().contains(task.content))
+        }
+    }
+
+    @Test fun widgetFilterSummaryAppearsWithControls() {
+        seed("Review the kitchen drawings", 0)
+        val host = showWidget(TaskViewConfig(controlsVisible = true))
+        instrumentation.runOnMainSync {
+            assertTrue(host.visibleTexts().any { it.contains(context.getString(R.string.widget_all_tags)) })
+        }
+    }
+
+    private fun showWidget(config: TaskViewConfig, size: DpSize = DpSize(340.dp, 620.dp), widgetContext: Context = context): AppWidgetHostView {
+        val state = mutablePreferencesOf().also { UpcomingWidgetPreferences.setConfiguration(it, config) }
         val remoteViews = runBlocking {
-            UpcomingTaskWidget().compose(context, size = DpSize(340.dp, 620.dp), state = mutablePreferencesOf())
+            UpcomingTaskWidget().compose(widgetContext, size = size, state = state)
         }
         lateinit var host: AppWidgetHostView
         compose.setContent { VerveDoTheme { Surface(Modifier.fillMaxSize()) {
@@ -121,7 +196,7 @@ class TaskMetadataUiTest {
                     updateAppWidget(remoteViews)
                     host = this
                 }
-            }, modifier = Modifier.size(340.dp, 620.dp))
+            }, modifier = Modifier.size(size.width, size.height))
             }
         } } }
         compose.waitUntil(10_000) {
@@ -129,8 +204,27 @@ class TaskMetadataUiTest {
             instrumentation.runOnMainSync { ready = host.texts().any { it.contains("14:30") } }
             ready
         }
-        capture("widget")
-        instrumentation.runOnMainSync { assertFalse(host.texts().any { it.contains("Widget-hidden subtask") }) }
+        return host
+    }
+
+    private fun View.clickableTextTarget(label: String): View? {
+        if (this is TextView && text.toString() == label) {
+            return generateSequence(this as View) { it.parent as? View }.firstOrNull { it.isClickable }
+        }
+        if (this is ViewGroup) return (0 until childCount).firstNotNullOfOrNull { getChildAt(it).clickableTextTarget(label) }
+        return null
+    }
+
+    private fun View.textView(label: String): TextView? = when (this) {
+        is TextView -> takeIf { text.toString() == label }
+        is ViewGroup -> (0 until childCount).firstNotNullOfOrNull { getChildAt(it).textView(label) }
+        else -> null
+    }
+
+    private fun View.visibleTexts(): List<String> = when (this) {
+        is TextView -> if (getGlobalVisibleRect(android.graphics.Rect())) listOf(text.toString()) else emptyList()
+        is ViewGroup -> (0 until childCount).flatMap { getChildAt(it).visibleTexts() }
+        else -> emptyList()
     }
 
     private fun seed(title: String, days: Long): TaskEntity = runBlocking {
@@ -148,7 +242,7 @@ class TaskMetadataUiTest {
         if (InstrumentationRegistry.getArguments().getString("captureMetadata") != "true") return
         instrumentation.waitForIdleSync()
         SystemClock.sleep(600)
-        val file = File(context.getExternalFilesDir(null), "metadata-review/$name.png")
+        val file = File(context.getExternalFilesDir(null), "metadata-review/${InstrumentationRegistry.getArguments().getString("capturePrefix") ?: "phone"}-$name.png")
         file.parentFile!!.mkdirs()
         instrumentation.uiAutomation.takeScreenshot().let { bitmap ->
             file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }

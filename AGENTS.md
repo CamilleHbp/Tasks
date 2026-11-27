@@ -1,0 +1,10 @@
+# Project instructions
+
+- Use English unless the user explicitly requests another language.
+- Desktop app changes target the PWA in `pwa/`. The retired Compose Multiplatform app for macOS and Windows is archived under `archive/desktop/`.
+- Always maintain complete English and French translations for the app, including every new or modified feature, settings, dialogs, errors, accessibility labels, and widgets. Keep user-facing text in localization resources and keep English/French resource keys, plural forms, and format arguments in sync. Follow the device language by default, use English as the fallback for unsupported languages, and preserve a persistent in-app language override with Follow system, English, and Français options. Preserve existing additional supported languages.
+- Keep process and reporting information out of deliverable documents; report it in chat instead.
+- Build only the application affected by the task. Rebuild Android debug and release APKs only after changes to Android code, resources, build configuration, or dependencies shared with Android, or an explicit Android/APK rebuild request. Desktop-only, unrelated-app, documentation, and instruction-only changes do not require Android builds or device deployment.
+- When Android is affected, after its final changes run `python3 /Users/camille/.codex/scripts/android_build_gate.py build --project /Users/camille/Dev/Personal/Tasks`, then the same command with `verify`. Confirm both variants succeed and provide verified APK paths. Report any blocker with the actual attempt-log path. Keep `scripts/android-build.json` source globs current when adding Android dependencies or shared modules.
+
+- Do not check update visibility or rerun live updater-eligibility tests after every release. Validate the updater mechanism when its implementation, integration, or catalogue contract changes, or when investigating a reported update problem. Routine releases rely on the working updater mechanism. Keep Settings → About → Check for updates available; it bypasses automatic check timing and Later snoozes.

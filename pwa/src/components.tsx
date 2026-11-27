@@ -6,6 +6,7 @@ import {
   newTask,
   uuid,
   validateTask,
+  validateSchedule,
   equal,
   Recurrence,
   today,
@@ -511,7 +512,12 @@ function formattedNotes(value: string) {
   return { __html: DOMPurify.sanitize(marked.parse(value, { async: false })) };
 }
 
-function NotesField({ value, onChange, startEditing, t }: {
+function NotesField({
+  value,
+  onChange,
+  startEditing,
+  t,
+}: {
   value: string;
   onChange: (value: string) => void;
   startEditing: boolean;
@@ -519,42 +525,54 @@ function NotesField({ value, onChange, startEditing, t }: {
 }) {
   const [editing, setEditing] = useState(startEditing);
   const id = useId();
-  const preview = useRef<HTMLDivElement>(null);
-  const restoreFocus = useRef(false);
-  React.useLayoutEffect(() => {
-    if (!editing && restoreFocus.current) {
-      restoreFocus.current = false;
-      preview.current?.focus();
-    }
-  }, [editing]);
   return (
     <div className="field notes-field">
-      <label htmlFor={editing ? id : undefined} onClick={() => setEditing(true)}>{t("notes")}</label>
+      <label
+        htmlFor={editing ? id : undefined}
+        onClick={() => setEditing(true)}
+      >
+        {t("notes")}
+      </label>
       {editing ? (
-        <textarea id={id} autoFocus maxLength={100000} value={value}
+        <textarea
+          id={id}
+          autoFocus
+          maxLength={100000}
+          value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => setEditing(false)}
-          onKeyDown={(e) => {
-            if (e.key !== "Escape" || e.nativeEvent.isComposing) return;
-            e.preventDefault();
-            e.stopPropagation();
-            restoreFocus.current = true;
-            setEditing(false);
-          }}
         />
       ) : (
-        <div ref={preview} role="button" tabIndex={0} className="notes-preview"
+        <div
+          role="button"
+          tabIndex={0}
+          className="notes-preview"
           aria-label={value ? t("edit") + " · " + t("notes") : t("addNotes")}
           onClick={(e) => {
-            if (!(e.target as Element).closest("a") && !window.getSelection()?.toString()) setEditing(true);
+            if (
+              !(e.target as Element).closest("a") &&
+              !window.getSelection()?.toString()
+            )
+              setEditing(true);
           }}
           onKeyDown={(e) => {
-            if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+            if (
+              e.target === e.currentTarget &&
+              (e.key === "Enter" || e.key === " ")
+            ) {
               e.preventDefault();
               setEditing(true);
             }
-          }}>
-          {value ? <div className="markdown" dangerouslySetInnerHTML={formattedNotes(value)} /> : t("addNotes")}
+          }}
+        >
+          {value ? (
+            <div
+              className="markdown"
+              dangerouslySetInnerHTML={formattedNotes(value)}
+            />
+          ) : (
+            t("addNotes")
+          )}
         </div>
       )}
     </div>
@@ -590,7 +608,6 @@ export function TaskModal({
   onClose,
   onSave,
   onDelete,
-  onComplete,
 }: {
   task: Task;
   data: Data;
@@ -598,7 +615,6 @@ export function TaskModal({
   onClose: () => void;
   onSave: (task: Task, base: Task) => Promise<Task>;
   onDelete: (id: string) => void;
-  onComplete: (id: string, completed: boolean) => void;
 }) {
   type FieldName = "title" | "notes" | "checklist" | "schedule" | "tags";
   const [active, setActive] = useState<FieldName | "new" | null>(
@@ -612,17 +628,22 @@ export function TaskModal({
   const form = useRef<HTMLFormElement>(null);
   const stepFocus = useRef<string | null>(null);
   const trigger = useRef<FieldName | null>(null);
-  const current = data.tasks.find((n) => n.id === task.id) || base;
+  const latest = data.tasks.find((n) => n.id === task.id) || base;
+  const inputStart = useRef(task);
   const creating = active === "new";
   const [stepText, setStepText] = useState("");
   const [stepChecked, setStepChecked] = useState(false);
   const composer = useRef<HTMLInputElement>(null);
   const checklistHeading = useRef<HTMLHeadingElement>(null);
-  const resumeEntry = useRef(false);
-  const draftChanged = active !== null && !equal(draft, base);
+  const draftChanged = !equal(draft, base);
   const dirty = draftChanged || !!stepText.trim();
-  const checklist =
-    creating || active === "checklist" ? draft.checklist : current.checklist;
+  const checklist = draft.checklist;
+  useEffect(() => {
+    if (!active && !dirty && latest !== base) {
+      setDraft(latest);
+      setBase(latest);
+    }
+  }, [active, dirty, latest, base]);
   function clearEntry() {
     setStepText("");
     setStepChecked(false);
@@ -640,8 +661,9 @@ export function TaskModal({
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
   useEffect(() => {
-    if (resumeEntry.current) return;
-    if (active && active !== "new") {
+    if (active === "new") {
+      form.current?.querySelector<HTMLInputElement>(".title-input")?.focus();
+    } else if (active) {
       const selectedStep =
         active === "checklist" && stepFocus.current
           ? Array.from(
@@ -652,6 +674,9 @@ export function TaskModal({
       (
         selectedStep ||
         form.current?.querySelector<HTMLElement>(
+          '[data-editor] input[type="date"]',
+        ) ||
+        form.current?.querySelector<HTMLElement>(
           "[data-editor] input:not([type=checkbox]), [data-editor] textarea, [data-editor] button",
         )
       )?.focus();
@@ -661,43 +686,40 @@ export function TaskModal({
         ?.focus();
     }
   }, [active]);
-  useEffect(() => {
-    if (!saving && resumeEntry.current) {
-      resumeEntry.current = false;
-      if (composer.current?.disabled) checklistHeading.current?.focus();
-      else composer.current?.focus();
-    }
-  }, [saving]);
   const patch = (p: Partial<Task>) => setDraft((d) => ({ ...d, ...p }));
   const close = () => {
     if (saving) return;
     if (dirty) setDiscard(true);
     else onClose();
   };
-  async function change(
-    next: FieldName | null,
-    immediate?: Partial<Task>,
-    continueEntry = false,
-  ) {
-    if (saving || (active && !form.current?.reportValidity())) return;
-    const original = active ? base : current;
-    let value = draftChanged || creating ? draft : current;
-    if (immediate) value = { ...value, ...immediate };
-    if (stepText.trim())
-      value = { ...value, checklist: appendEntry(value.checklist) };
+  function openField(field: FieldName) {
+    trigger.current = field;
+    setActive(field);
+  }
+  function updateOption(value: Partial<Task>) {
+    trigger.current = null;
+    patch(value);
+    if (!creating) setActive(null);
+  }
+  async function save() {
+    if (saving || !(dirty || creating) || !form.current?.reportValidity())
+      return;
+    const title = draft.title === base.title
+      ? draft.title
+      : draft.title.trim().replace(/^./u, (first) => first.toUpperCase());
+    const value = stepText.trim()
+      ? { ...draft, title, checklist: appendEntry(checklist) }
+      : { ...draft, title };
     try {
       setError("");
       setSaving(true);
-      resumeEntry.current = continueEntry;
-      if (dirty || creating || immediate) {
-        validateTask(value);
-        value = await onSave(value, original);
-      }
-      setBase(value);
-      setDraft(value);
+      validateTask(value);
+      const saved = await onSave(value, base);
+      if (creating) trigger.current = "title";
+      setDraft(saved);
+      setBase(saved);
       clearEntry();
-      if (next) trigger.current = next;
-      setActive(next);
+      setActive(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "error");
     } finally {
@@ -705,10 +727,51 @@ export function TaskModal({
     }
   }
   function cancel() {
+    if (creating) {
+      close();
+      return;
+    }
+    clearEntry();
     setError("");
-    setDraft(base);
+    setDraft(latest);
+    setBase(latest);
     setActive(null);
   }
+  useEffect(() => {
+    // Clicking blank space can put keyboard focus on the document body.
+    function taskShortcut(event: KeyboardEvent) {
+      if (
+        !dirty ||
+        saving ||
+        discard ||
+        event.isComposing ||
+        event.repeat ||
+        (event.key !== "Enter" && event.key !== "Escape")
+      )
+        return;
+      const target = event.target;
+      const dialog = form.current?.closest("dialog");
+      if (
+        !(target instanceof Element) ||
+        !dialog ||
+        (target !== document.body && !dialog.contains(target))
+      )
+        return;
+      if (target.closest("input, textarea, select, [contenteditable=true]"))
+        return;
+      if (
+        event.key === "Enter" &&
+        target.closest("button, a, summary, [role=button]")
+      )
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === "Escape") cancel();
+      else form.current?.requestSubmit();
+    }
+    document.addEventListener("keydown", taskShortcut, true);
+    return () => document.removeEventListener("keydown", taskShortcut, true);
+  });
   const step = (id: string, p: Partial<Task["checklist"][number]>) =>
     patch({
       checklist: draft.checklist.map((s) => (s.id === id ? { ...s, ...p } : s)),
@@ -734,7 +797,7 @@ export function TaskModal({
         disabled={saving}
         onClick={() => {
           stepFocus.current = stepId || null;
-          void change(field);
+          openField(field);
         }}
       >
         <span className="inline-content">{content}</span>
@@ -759,32 +822,20 @@ export function TaskModal({
   }
   function editor(field: FieldName, children: React.ReactNode) {
     return (
-      <div data-editor={active === field ? "" : undefined}>
-        {children}
-        {active === field && (
-          <div className="field-actions">
-            <button type="button" onClick={cancel}>
-              {t("cancel")}
-            </button>
-            <button className="primary" type="submit">
-              {t("save")}
-            </button>
-          </div>
-        )}
-      </div>
+      <div data-editor={active === field ? "" : undefined}>{children}</div>
     );
   }
   const editLabel = (key: string) => `${t("edit")} · ${t(key)}`;
   const scheduleSummary = [
-    current.dueDate
-      ? scheduleDate(current.dueDate, data.preferences.language)
+    draft.dueDate
+      ? scheduleDate(draft.dueDate, data.preferences.language)
       : t("noDate"),
-    current.dueTime && `${current.dueTime} (${current.timeZone})`,
-    current.recurrence &&
+    draft.dueTime && `${draft.dueTime} (${draft.timeZone})`,
+    draft.recurrence &&
       t(
-        current.recurrence.frequency +
-          (current.recurrence.interval === 1 ? "Once" : "Multiple"),
-      ).replace("%d", String(current.recurrence.interval)),
+        draft.recurrence.frequency +
+          (draft.recurrence.interval === 1 ? "Once" : "Multiple"),
+      ).replace("%d", String(draft.recurrence.interval)),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -795,9 +846,9 @@ export function TaskModal({
         wide
         onClose={close}
         footer={
-          creating ? (
+          creating || dirty ? (
             <>
-              <button disabled={saving} onClick={close}>
+              <button disabled={saving} onClick={cancel}>
                 {t("cancel")}
               </button>
               <button
@@ -805,7 +856,7 @@ export function TaskModal({
                 disabled={saving}
                 onClick={() => form.current?.requestSubmit()}
               >
-                {t("save")}
+                {t("save")} <kbd aria-hidden="true">{/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl"} ↵</kbd>
               </button>
             </>
           ) : (
@@ -813,7 +864,7 @@ export function TaskModal({
               <button
                 className="danger"
                 disabled={saving || dirty}
-                onClick={() => onDelete(current.id)}
+                onClick={() => onDelete(draft.id)}
               >
                 {t("delete")}
               </button>
@@ -835,17 +886,61 @@ export function TaskModal({
           className="task-layout"
           onSubmit={(e) => {
             e.preventDefault();
-            if (active) void change(null);
+            void save();
+          }}
+          tabIndex={-1}
+          onFocusCapture={(e) => {
+            if (e.target.matches("input, textarea, select"))
+              inputStart.current = draft;
           }}
           onKeyDown={(e) => {
-            if (active && (e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            if (
+              e.defaultPrevented ||
+              e.nativeEvent.isComposing ||
+              e.nativeEvent.keyCode === 229
+            )
+              return;
+            if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
               e.preventDefault();
-              form.current?.requestSubmit();
+              if (!e.repeat) form.current?.requestSubmit();
+              return;
             }
-            if (active && !creating && e.key === "Escape") {
-              e.preventDefault();
-              if (!saving) cancel();
+            const input = e.target;
+            if (!(
+              input instanceof HTMLInputElement ||
+              input instanceof HTMLTextAreaElement ||
+              input instanceof HTMLSelectElement
+            ))
+              return;
+            if (e.key !== "Enter" && e.key !== "Escape") return;
+            if (
+              e.key === "Enter" &&
+              e.shiftKey &&
+              input instanceof HTMLTextAreaElement
+            )
+              return;
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.repeat || saving) return;
+            if (e.key === "Escape") {
+              setDraft(inputStart.current);
+            } else {
+              if (!input.reportValidity()) return;
+              try {
+                if (input.matches(".title-input") && !input.value.trim())
+                  throw Error("invalidTitle");
+                if (input.hasAttribute("data-step") && !input.value.trim())
+                  throw Error("invalidChecklist");
+                if (input.closest(".schedule-editor")) validateSchedule(draft);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "error");
+                return;
+              }
             }
+            setError("");
+            trigger.current = null;
+            form.current?.focus({ preventScroll: true });
+            if (!creating) setActive(null);
           }}
         >
           <fieldset disabled={saving} className="task-body task-column">
@@ -855,7 +950,8 @@ export function TaskModal({
                 <>
                   <Field label={t("title")}>
                     <input
-                      autoFocus={creating}
+                      aria-describedby={creating ? "task-title-hint" : undefined}
+                      autoCapitalize="sentences"
                       className="title-input"
                       required
                       maxLength={16000}
@@ -863,41 +959,44 @@ export function TaskModal({
                       onChange={(e) => patch({ title: e.target.value })}
                     />
                   </Field>
+                  {creating && <small id="task-title-hint">{t("titleHint")}</small>}
                 </>,
               )
             ) : (
-              <h1 className="detail-title" aria-label={current.title}>
-                {opener("title", current.title, editLabel("title"))}
+              <h1 className="detail-title" aria-label={draft.title}>
+                {opener("title", draft.title, editLabel("title"))}
               </h1>
             )}
             {!creating && (
               <label className="toggle">
                 <input
                   type="checkbox"
-                  checked={current.completed}
-                  disabled={dirty}
-                  onChange={(e) => {
-                    cancel();
-                    onComplete(current.id, e.target.checked);
-                  }}
+                  checked={draft.completed}
+                  onChange={(e) =>
+                    updateOption({ completed: e.target.checked })
+                  }
                 />
-                {t(current.completed ? "completed" : "openTasks")}
+                {t(draft.completed ? "completed" : "openTasks")}
               </label>
             )}
             {showing("notes") ? (
               editor(
                 "notes",
-                <NotesField value={draft.details} startEditing={!creating} t={t}
-                  onChange={(details) => patch({ details })} />,
+                <NotesField
+                  value={draft.details}
+                  startEditing={!creating}
+                  t={t}
+                  onChange={(details) => patch({ details })}
+                />,
               )
             ) : (
               <>
-                <h3>
-                  {current.details
+                <h2>
+                  {draft.details
                     ? opener("notes", t("notes"), editLabel("notes"))
                     : t("notes")}
-                </h3>
-                {current.details ? (
+                </h2>
+                {draft.details ? (
                   <div
                     className="markdown inline-markdown"
                     onClick={(e) => {
@@ -905,18 +1004,18 @@ export function TaskModal({
                         !(e.target as Element).closest("a") &&
                         !window.getSelection()?.toString()
                       )
-                        void change("notes");
+                        openField("notes");
                     }}
-                    dangerouslySetInnerHTML={formattedNotes(current.details)}
+                    dangerouslySetInnerHTML={formattedNotes(draft.details)}
                   />
                 ) : (
                   opener("notes", t("addNotes"), t("addNotes"))
                 )}
               </>
             )}
-            <h3 ref={checklistHeading} tabIndex={-1}>
+            <h2 ref={checklistHeading} tabIndex={-1}>
               <IconLabel name="checklist">{t("checklist")}</IconLabel>
-            </h3>
+            </h2>
             {showing("checklist") ? (
               editor(
                 "checklist",
@@ -986,7 +1085,7 @@ export function TaskModal({
               )
             ) : (
               <>
-                {current.checklist.map((s) => (
+                {draft.checklist.map((s) => (
                   <div className="inline-step" key={s.id}>
                     <label className="step-check">
                       <input
@@ -994,8 +1093,8 @@ export function TaskModal({
                         aria-label={s.title}
                         checked={s.completed}
                         onChange={() =>
-                          void change(null, {
-                            checklist: current.checklist.map((item) =>
+                          updateOption({
+                            checklist: draft.checklist.map((item) =>
                               item.id === s.id
                                 ? { ...item, completed: !item.completed }
                                 : item,
@@ -1050,13 +1149,13 @@ export function TaskModal({
                   if (e.key === "Escape") {
                     clearEntry();
                     checklistHeading.current?.focus();
+                  } else if (!stepText.trim() && !e.repeat) {
+                    form.current?.focus({ preventScroll: true });
                   } else if (stepText.trim() && !e.repeat) {
-                    if (creating) {
-                      patch({ checklist: appendEntry(checklist) });
-                      clearEntry();
-                      if (checklist.length === 499)
-                        checklistHeading.current?.focus();
-                    } else void change(null, undefined, true);
+                    patch({ checklist: appendEntry(checklist) });
+                    clearEntry();
+                    if (checklist.length === 499)
+                      checklistHeading.current?.focus();
                   }
                 }}
               />
@@ -1064,12 +1163,11 @@ export function TaskModal({
           </fieldset>
           <fieldset disabled={saving} className="task-meta task-column">
             <PriorityScale
-              value={creating ? draft.priority : current.priority}
+              value={draft.priority}
               t={t}
               onChange={(priority) => {
                 if (priority !== null) {
-                  if (creating) patch({ priority });
-                  else void change(null, { priority });
+                  updateOption({ priority });
                 }
               }}
             />
@@ -1089,32 +1187,25 @@ export function TaskModal({
               )
             ) : (
               <>
-                <h3>
+                <h2>
                   <IconLabel name="agenda">{t("dueDate")}</IconLabel>
-                </h3>
+                </h2>
                 {opener("schedule", scheduleSummary, editLabel("dueDate"))}
               </>
             )}
             <label className="schedule-toggle rollover-setting">
-              <IconLabel
-                name="rollover"
-                off={!(creating ? draft.rollover : current.rollover)}
-              >
+              <IconLabel name="rollover" off={!draft.rollover}>
                 {t("rollover")}
               </IconLabel>
               <input
                 type="checkbox"
-                checked={creating ? !!draft.rollover : !!current.rollover}
-                onChange={(e) =>
-                  creating
-                    ? patch({ rollover: e.target.checked })
-                    : void change(null, { rollover: e.target.checked })
-                }
+                checked={!!draft.rollover}
+                onChange={(e) => updateOption({ rollover: e.target.checked })}
               />
             </label>
-            <h3>
+            <h2>
               <IconLabel name="tags">{t("tags")}</IconLabel>
-            </h3>
+            </h2>
             {showing("tags")
               ? editor(
                   "tags",
@@ -1129,10 +1220,10 @@ export function TaskModal({
                 )
               : opener(
                   "tags",
-                  current.tags.length ? (
+                  draft.tags.length ? (
                     <span className="chips">
                       {data.tags
-                        .filter((tag) => current.tags.includes(tag.id))
+                        .filter((tag) => draft.tags.includes(tag.id))
                         .map((tag) => (
                           <span className="chip" key={tag.id}>
                             <Artwork tag={tag} />

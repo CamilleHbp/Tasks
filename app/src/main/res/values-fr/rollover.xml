@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rollover_title">Reporter au lendemain</string>
+    <string name="rollover_default">Reporter les tâches non terminées au lendemain</string>
+    <string name="rollover_default_hint">Activer le report au lendemain par défaut pour les nouvelles tâches. Vous pouvez le modifier pour chaque tâche.</string>
+</resources>

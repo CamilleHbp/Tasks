@@ -5,6 +5,9 @@ import android.graphics.Bitmap
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
@@ -81,19 +84,62 @@ class TaskDetailUiTest {
         var edit: TaskEntity? = null
         showDetail { edit = it }
         compose.onNodeWithText(sample.details).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.task_view_title)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.task_status_todo)).assertIsDisplayed()
+        compose.onNodeWithContentDescription(context.getString(R.string.widget_complete_task, sample.content)).assertIsOff()
+        compose.onNodeWithText(sample.content).performClick()
+        assertFalse(saved().isCompleted)
         capture("detail-light")
         compose.onNodeWithText("Choose bulbs and native flowers").performScrollTo().performClick()
         compose.waitUntil(5_000) { saved().subtasks[1].isCompleted }
         assertFalse(saved().isCompleted)
-        compose.onNodeWithText(context.getString(R.string.task_edit)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.task_detail_edit)).performScrollTo().performClick()
         compose.runOnIdle { assertTrue(edit!!.subtasks[1].isCompleted) }
         runBlocking { repository.updateTask(saved().copy(content = "Updated garden plan")) }
+        compose.waitUntil(5_000) { detail.uiState.value.task?.content == "Updated garden plan" }
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Updated garden plan"))
         compose.onNodeWithText("Updated garden plan").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tip_mark_completed)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.widget_complete_task, "Updated garden plan")).performClick()
         compose.waitUntil(5_000) { saved().isCompleted }
         assertFalse(saved().subtasks.last().isCompleted)
-        compose.onNodeWithText(context.getString(R.string.task_mark_incomplete)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.widget_restore_task, "Updated garden plan")).assertIsOn()
+        compose.onNodeWithText(context.getString(R.string.task_status_completed)).assertIsDisplayed()
+        capture("detail-completed")
+        compose.onNodeWithContentDescription(context.getString(R.string.widget_restore_task, "Updated garden plan")).performClick()
         compose.waitUntil(5_000) { !saved().isCompleted }
+    }
+
+    @Test fun markdownDetailsRenderAndKeepSourceForEditing() {
+        val source = "# Planting plan\n\nUse **native flowers** and *herbs*.\n\n- Buy seeds\n- Prepare soil\n\n`garden.txt`"
+        runBlocking { repository.updateTask(sample.copy(details = source)) }
+        var edited: TaskEntity? = null
+        showDetail { edited = it }
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithText("Planting plan").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("Planting plan").assertIsDisplayed()
+        compose.onNodeWithText("Use native flowers and herbs.").assertExists()
+        compose.onNodeWithText("Buy seeds").assertExists()
+        compose.onNodeWithText(source).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.task_detail_edit)).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(source, edited!!.details) }
+        assertEquals(source, saved().details)
+    }
+
+    @Test fun markdownEditorShowsAndSavesRawSource() {
+        val source = "# Plan\n\n**Keep this formatting**"
+        val task = sample.copy(details = source)
+        val model = EditorViewModel(task, repository, settings, tags, ConfettiController())
+        store.put("editor", model)
+        var didSave = false
+        compose.setContent { VerveDoTheme(dynamicColor = false, animate = false) {
+            TaskEditorPage(task = task, viewModel = model, onSaved = { didSave = true })
+        } }
+        val replacement = "# Updated plan\n\n- **Native flowers**\n- Herbs\n\n[Guide](https://example.com)"
+        compose.onNode(hasText(source) and hasSetTextAction()).performScrollTo().performTextReplacement(replacement)
+        compose.onNodeWithContentDescription(context.getString(R.string.action_save)).performClick()
+        compose.waitUntil(5_000) { didSave }
+        assertEquals(replacement, saved().details)
     }
 
     @Test fun editorAddsRenamesRemovesAndSavesChecklist() {
@@ -106,14 +152,15 @@ class TaskDetailUiTest {
             SystemBars(false)
             TaskEditorPage(task = sample, viewModel = model, onSaved = { saved = true })
         } }
-        compose.onNodeWithText(context.getString(R.string.task_subtask_label, 2))
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription(context.getString(R.string.task_subtask_label, 2)))
+        compose.onNodeWithContentDescription(context.getString(R.string.task_subtask_label, 2))
             .performScrollTo().performTextReplacement("Choose spring bulbs")
         compose.onNodeWithContentDescription(context.getString(R.string.task_subtask_remove, 3))
             .performScrollTo().performClick()
-        compose.onNodeWithText(context.getString(R.string.task_subtask_add)).performScrollTo().performClick()
-        compose.onNodeWithText(context.getString(R.string.task_subtask_label, 3))
-            .performScrollTo().performTextInput("Water the new beds")
-        compose.onNodeWithText(context.getString(R.string.task_subtask_label, 1)).performScrollTo()
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasTestTag("subtask-composer"))
+        compose.onNodeWithTag("subtask-composer").performScrollTo().performTextInput("Water the new beds")
+        compose.onNodeWithTag("subtask-composer").performImeAction()
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasContentDescription(context.getString(R.string.task_subtask_label, 1)))
         compose.runOnIdle { keyboard?.hide() }
         capture("editor-checklist")
         compose.onNodeWithContentDescription(context.getString(R.string.action_save)).performClick()
@@ -167,10 +214,48 @@ class TaskDetailUiTest {
         runBlocking { repository.deleteTask(sample) }
         compose.waitUntil(5_000) { detail.uiState.value.task == null }
         compose.onNodeWithText(context.getString(R.string.task_not_found)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.task_edit)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.task_detail_edit)).assertDoesNotExist()
     }
 
     @Test fun captureDarkLargeText() { showDetail(dark = true, scale = 1.3f); capture("detail-dark-large") }
+
+    @Test fun longFrenchTitleAndCompletedStatusRemainReadable() {
+        val longTitle = "Préparer le jardin pour l’automne et planter des herbes le long de l’allée"
+        runBlocking { repository.updateTask(sample.copy(content = longTitle, isCompleted = true)) }
+        showDetail(dark = true, scale = 1.3f, expectedTitle = longTitle)
+        compose.onNodeWithText(longTitle).assertIsDisplayed()
+        compose.onNodeWithContentDescription("Modifier la tâche").assertIsDisplayed()
+        compose.onNodeWithText("Terminée").assertIsDisplayed()
+        capture("detail-long-fr-completed")
+        compose.onNodeWithText("Terminée").performClick()
+        compose.waitUntil(5_000) { !saved().isCompleted }
+        compose.onNodeWithText("À faire").assertIsDisplayed()
+        compose.onNodeWithTag("task-detail-date").assertIsDisplayed()
+        compose.onNode(hasScrollToNodeAction()).performScrollToIndex(0)
+        capture("detail-long-fr")
+    }
+
+    @Test fun undatedStatusRemainsAvailableAndDateDoesNotToggleTask() {
+        runBlocking { repository.updateTask(sample.copy(dueDateMillis = null, dueTimeMinutes = null)) }
+        showDetail()
+        compose.onNodeWithTag("task-detail-date").assertContentDescriptionEquals(context.getString(R.string.view_no_date)).performClick()
+        assertFalse(saved().isCompleted)
+        compose.onNodeWithText(context.getString(R.string.task_status_todo)).performClick()
+        compose.waitUntil(5_000) { saved().isCompleted }
+        compose.onNodeWithText(context.getString(R.string.task_status_completed)).assertIsDisplayed()
+        capture("detail-undated-completed")
+    }
+
+    @Test fun dateInAnotherYearIsExplicitAndCompletingClearsOverdue() {
+        val date = LocalDate.now().minusYears(1).withMonth(3).withDayOfMonth(6)
+        runBlocking { repository.updateTask(sample.copy(dueDateMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), dueTimeMinutes = null)) }
+        showDetail()
+        compose.onNodeWithText(date.year.toString(), substring = true, useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithText("Overdue", substring = true, useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.task_status_todo)).performClick()
+        compose.waitUntil(5_000) { saved().isCompleted }
+        compose.onNodeWithText("Overdue", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
 
     @Test fun captureEmptyChecklist() {
         runBlocking { repository.updateTask(sample.copy(subtasks = emptyList(), details = "")) }
@@ -179,17 +264,22 @@ class TaskDetailUiTest {
         capture("detail-empty")
     }
 
-    private fun showDetail(dark: Boolean = false, scale: Float = 1f, onEdit: (TaskEntity) -> Unit = {}) {
+    private fun showDetail(dark: Boolean = false, scale: Float = 1f, expectedTitle: String = sample.content, onEdit: (TaskEntity) -> Unit = {}) {
         compose.setContent {
-            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, scale)) {
+            SystemBars(dark)
+            val localized = remember { context.createConfigurationContext(android.content.res.Configuration(context.resources.configuration).apply {
+                setLocale(if (dark) java.util.Locale.FRENCH else java.util.Locale.ENGLISH)
+            }) }
+            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, scale),
+                LocalContext provides localized, LocalResources provides localized.resources,
+                LocalConfiguration provides localized.resources.configuration) {
                 VerveDoTheme(darkTheme = dark, dynamicColor = false, animate = false) {
-                    SystemBars(dark)
                     TaskDetailPage(1, {}, onEdit, detail)
                 }
             }
         }
         compose.waitUntil(5_000) { !detail.uiState.value.isLoading }
-        compose.waitUntil(5_000) { compose.onAllNodesWithText(sample.content).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(5_000) { compose.onAllNodesWithText(expectedTitle).fetchSemanticsNodes().isNotEmpty() }
         compose.waitForIdle()
     }
 

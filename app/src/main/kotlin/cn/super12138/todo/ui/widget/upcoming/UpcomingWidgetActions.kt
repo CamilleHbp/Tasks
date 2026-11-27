@@ -23,8 +23,19 @@ class UpcomingControlsAction : ActionCallback {
         updateAppWidgetState(context, glanceId) { preferences ->
             with(UpcomingWidgetPreferences) {
                 when (parameters[commandKey]) {
+                    "group" -> {
+                        val config = configuration(preferences)
+                        val key = parameters[valueKey] ?: return@updateAppWidgetState
+                        setConfiguration(preferences, config.copy(collapsed =
+                            if (key in config.collapsed) config.collapsed - key else config.collapsed + key))
+                    }
+                    "status" -> {
+                        val config = configuration(preferences)
+                        val statuses = cn.super12138.todo.logic.model.TaskStatusFilter.entries
+                        setConfiguration(preferences, config.copy(status = statuses[(config.status.ordinal + 1) % statuses.size]))
+                    }
                     "controls" -> {
-                        preferences[controlsKey] = !(preferences[controlsKey] ?: true)
+                        preferences[controlsKey] = !(preferences[controlsKey] ?: false)
                         preferences.remove(panelKey)
                     }
                     "panel" -> preferences[panelKey] = parameters[valueKey].orEmpty()

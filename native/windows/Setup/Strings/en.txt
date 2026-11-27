@@ -1,0 +1,10 @@
+title=VerveTwoDo Widgets Setup
+preparing=Preparing…
+permission=Approve the Windows prompt so your PC trusts VerveTwoDo Widgets. This is asked only once.
+installing=Installing VerveTwoDo Widgets…
+done=VerveTwoDo Widgets is installed. Connect with your access code, then press Windows + W and add VerveTwoDo to your widgets.
+declined=VerveTwoDo Widgets needs your approval to be trusted on this PC. Open the installer again to retry.
+unsupported=VerveTwoDo Widgets requires Windows 11.
+failed=VerveTwoDo Widgets could not be installed.
+details=Details: {0}
+close=Close

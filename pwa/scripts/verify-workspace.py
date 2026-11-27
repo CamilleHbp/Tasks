@@ -5,7 +5,7 @@ import json
 import subprocess
 import urllib.request
 
-base = 'https://todo.camille.studio'
+base = 'https://tasks.camille.studio'
 # Capture the existing owner code directly in memory; never log or export it.
 code = json.loads(subprocess.check_output([
     'ssh', 'nf-showcases', 'sudo', 'cat',

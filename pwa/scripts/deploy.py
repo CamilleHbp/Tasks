@@ -69,7 +69,7 @@ current=stage.parent/'current'
 previous=current.resolve() if current.exists() else None
 caddy=root/'Caddyfile'
 original=caddy.read_text()
-domain='todo.camille.studio'
+domain='tasks.camille.studio'
 changed=False
 try:
     run('docker','compose','-p','vervetwodo-web','up','-d','--build','--wait')
@@ -96,4 +96,4 @@ print('Verified web release deployed: '+stage.name)
 run(['ssh', 'nf-showcases', 'sudo', 'python3', '-'], input=script, text=True)
 # Recheck bytes from public HTTPS, including the service worker and install icons.
 run(['python3', str(pwa / 'scripts' / 'verify-public.py'), str(stage)])
-print('https://todo.camille.studio')
+print('https://tasks.camille.studio')

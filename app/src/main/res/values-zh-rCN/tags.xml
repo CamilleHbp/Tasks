@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">色轮</string>
     <string name="tag_color_brightness">亮度</string>
-    <string name="tag_manage">管理标签</string>
-    <string name="tag_manage_description">重命名、更改颜色或删除所有任务中的标签。</string>
     <string name="tag_edit">编辑标签</string>
     <string name="tag_edit_named">编辑标签“%1$s”</string>
     <string name="tag_create">新建标签</string>

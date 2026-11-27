@@ -1,0 +1,4 @@
+<resources>
+    <string name="pref_check_updates">Rechercher des mises à jour</string>
+    <string name="pref_check_updates_desc">Vérifier maintenant, même après avoir choisi Plus tard.</string>
+</resources>

@@ -1,14 +1,14 @@
-# VerveTwoDo Web
+# Tasks Web
 
-An installable, offline-capable browser edition of VerveTwoDo. The web gateway runs independently of the Android and desktop applications and joins their existing private workspace.
+Tasks on desktop is an installable, offline-capable progressive web app (PWA). It can sync with Android through the same private workspace. The original Compose Multiplatform app is retired. [Legacy desktop source](../archive/desktop/README.md)
 
 ## Use
 
-Open [VerveTwoDo Web](https://todo.camille.studio). Use your browser’s **Install app**, **Add to Dock**, or **Add to Home Screen** command. After the first successful load, the application works offline.
+Open [Tasks Web](https://tasks.camille.studio). Use your browser’s **Install app**, **Add to Dock**, or **Add to Home Screen** command. After the first successful load, the application works offline.
 
 If you installed the earlier sslip.io edition, synchronize there first, then open and install this address and reconnect with your existing access code. Browser storage, preferences, and notification permissions are separate for each address. The earlier address remains available during the transition; export a backup there if you keep tasks local-only.
 
-Tasks are stored in this browser’s IndexedDB database. In **Settings → Synchronization**, enter the same access code used by the Mac or Android app. Local tasks merge into the workspace; independent field edits merge, and competing values remain available for explicit resolution. **Disconnect** revokes the web session but retains this browser’s local tasks. Browser data clearing removes the local copy; export a backup for independent safekeeping.
+Tasks are stored in this browser’s IndexedDB database. In **Settings → Synchronization**, enter your workspace access code. Local tasks merge into the workspace, independent field edits merge, and competing values remain available for explicit resolution. **Disconnect** revokes the web session but retains this browser’s local tasks. Browser data clearing removes the local copy. Export a backup for independent safekeeping.
 
 The application supports:
 
@@ -21,11 +21,11 @@ The application supports:
 - A configurable **My collection** view with date scope, any/all/untagged matching, date grouping, sorting, and category icons.
 - Foreground reminders and opt-in Web Push reminders for synchronized tasks, with default time and advance reminders. Completing, deleting, or rescheduling a task changes the server’s reminder eligibility.
 
-Browser applications cannot register desktop widgets themselves. On macOS and Windows 11, **Settings → Desktop widget** offers **VerveTwoDo Widgets**, a small companion that syncs with the same access code, shows your tasks in the system widgets, and opens tasks back in this app. It updates itself. **My collection** supplies the configurable task view inside the PWA. Local-only reminders require the page to run. Background reminders require synchronization, an active web session, browser push support, and notification permission. Browser/OS restrictions, offline devices, Focus modes, and expired sessions may delay or prevent delivery. On iOS/iPadOS, install the application on the Home Screen before enabling background reminders. Reconnect when the application requests session renewal.
+Browser applications cannot register desktop widgets themselves. On macOS and Windows 11, **Settings → Desktop widget** offers **Tasks Widgets**, a small companion that syncs with the same access code, shows your tasks in the system widgets, and opens tasks back in this app. It updates itself. **My collection** supplies the configurable task view inside the PWA. Local-only reminders require the page to run. Background reminders require synchronization, an active web session, browser push support, and notification permission. Browser/OS restrictions, offline devices, Focus modes, and expired sessions may delay or prevent delivery. On iOS/iPadOS, install the application on the Home Screen before enabling background reminders. Reconnect when the application requests session renewal.
 
 ## Development
 
-Prerequisites: Node.js 22.12 or newer and Go 1.27. Private Go dependencies require access to the same pinned `sync-core` module as the desktop app.
+Development requires Node.js 22.12 or newer, Go 1.27, and access to the pinned private `sync-core` module.
 
 ```sh
 cd pwa
@@ -64,4 +64,4 @@ This edition is served over HTTPS rather than distributed as an APK or desktop p
 
 ## Credits and license
 
-VerveTwoDo builds on VerveDo by super12138. Category artwork and English/French application vocabulary are reused from this repository’s desktop resources. The application is distributed under the repository’s GPL-3.0 license. Third-party libraries retain their respective licenses in the dependency metadata.
+Tasks builds on VerveDo by super12138. Category artwork and English/French application vocabulary are reused from this repository’s desktop resources. The application is distributed under the repository’s GPL-3.0 license. Third-party libraries retain their respective licenses in the dependency metadata.

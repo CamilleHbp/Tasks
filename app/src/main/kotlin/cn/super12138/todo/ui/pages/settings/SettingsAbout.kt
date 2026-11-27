@@ -72,6 +72,18 @@ fun SettingsAbout(
                     }
                 )
             }
+            item(key = "updates") {
+                SettingsItem(
+                    leadingIconRes = R.drawable.ic_download,
+                    title = stringResource(R.string.pref_check_updates),
+                    description = stringResource(R.string.pref_check_updates_desc),
+                    onClick = {
+                        var owner = context
+                        while (owner is android.content.ContextWrapper && owner !is android.app.Activity) owner = owner.baseContext
+                        (owner as? android.app.Activity)?.let { studio.camille.updater.CamilleUpdater.checkNow(it) }
+                    }
+                )
+            }
             item(key = 2) {
                 SettingsItem(
                     leadingIconRes = R.drawable.ic_person_4,

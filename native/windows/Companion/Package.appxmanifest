@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+ xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+ xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+ xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+ xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+ xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+ IgnorableNamespaces="uap uap3 uap5 com rescap">
+ <Identity Name="studio.camille.vervetwodo.widgets" Publisher="CN=VerveTwoDo Personal" Version="__VERSION__.0" ProcessorArchitecture="x64" />
+ <Properties><DisplayName>Tasks Widgets</DisplayName><PublisherDisplayName>Camille</PublisherDisplayName><Logo>Assets\StoreLogo.png</Logo></Properties>
+ <Resources><Resource Language="en-us"/><Resource Language="fr-fr"/></Resources>
+ <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0"/></Dependencies>
+ <Applications>
+  <Application Id="App" Executable="VerveWidgetsCompanion.exe" EntryPoint="Windows.FullTrustApplication">
+   <uap:VisualElements DisplayName="Tasks Widgets" Description="Tasks Widgets" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" BackgroundColor="transparent"/>
+   <Extensions>
+    <uap:Extension Category="windows.protocol"><uap:Protocol Name="vervetwodo-widgets"><uap:DisplayName>Tasks Widgets</uap:DisplayName></uap:Protocol></uap:Extension>
+    <uap5:Extension Category="windows.startupTask"><uap5:StartupTask TaskId="VerveTwoDoWidgets" Enabled="true" DisplayName="Tasks Widgets"/></uap5:Extension>
+    <com:Extension Category="windows.comServer"><com:ComServer>
+     <com:ExeServer Executable="VerveWidgetsCompanion.exe" DisplayName="Tasks Widgets">
+      <com:Class Id="8E3CA270-6827-43B9-BED2-13E3E5041AF9" DisplayName="Tasks Widgets"/>
+     </com:ExeServer>
+    </com:ComServer></com:Extension>
+    <uap3:Extension Category="windows.appExtension">
+     <uap3:AppExtension Name="com.microsoft.windows.widgets" DisplayName="Tasks" Id="VerveTasks" PublicFolder="Public">
+      <uap3:Properties><WidgetProvider>
+       <ProviderIcons><Icon Path="Assets\SmallLogo.png"/></ProviderIcons>
+       <Activation><CreateInstance ClassId="8E3CA270-6827-43B9-BED2-13E3E5041AF9"/></Activation>
+       <Definitions><Definition Id="VerveTasks" DisplayName="Tasks" Description="Tasks" AllowMultiple="true">
+        <Capabilities><Capability><Size Name="small"/></Capability><Capability><Size Name="medium"/></Capability><Capability><Size Name="large"/></Capability></Capabilities>
+        <ThemeResources><Icons><Icon Path="Assets\SmallLogo.png"/></Icons><Screenshots><Screenshot Path="Assets\Logo.png" DisplayAltText="Tasks"/></Screenshots></ThemeResources>
+       </Definition></Definitions>
+      </WidgetProvider></uap3:Properties>
+     </uap3:AppExtension>
+    </uap3:Extension>
+   </Extensions>
+  </Application>
+ </Applications>
+ <Capabilities><rescap:Capability Name="runFullTrust"/></Capabilities>
+</Package>

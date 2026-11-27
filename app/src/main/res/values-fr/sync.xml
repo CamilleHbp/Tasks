@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_title">Synchronisation</string>
+    <string name="sync_description">Connectez vos appareils avec le même serveur et code d’accès. Les tâches existantes sont ajoutées à votre espace privé.</string>
+    <string name="sync_connected">Connecté à votre espace privé</string>
+    <string name="sync_disconnected">Connecter Android et le bureau</string>
+    <string name="sync_pending">Modifications en attente</string>
+    <string name="sync_error">La synchronisation n’a pas abouti. Vos modifications locales sont enregistrées. Vérifiez la connexion ou reconnectez-vous avec votre code d’accès.</string>
+    <string name="sync_server">Adresse du serveur</string>
+    <string name="sync_code">Code d’accès</string>
+    <string name="sync_connect">Connecter / renouveler l’accès</string>
+    <string name="sync_now">Synchroniser</string>
+    <string name="sync_conflict">Choisissez une valeur pour résoudre le conflit</string>
+    <string name="sync_empty">Valeur vide</string>
+    <string name="sync_close">Fermer</string>
+    <string name="sync_field_title">Titre</string>
+    <string name="sync_field_details">Détails</string>
+    <string name="sync_field_completed">Achèvement</string>
+    <string name="sync_field_priority">Priorité</string>
+    <string name="sync_field_dueDate">Date</string>
+    <string name="sync_field_dueTime">Heure</string>
+    <string name="sync_field_timeZone">Fuseau horaire</string>
+    <string name="sync_field_checklist">Sous-tâches</string>
+    <string name="sync_field_recurrence">Récurrence</string>
+    <string name="sync_field_tags">Étiquettes</string>
+    <string name="sync_field_parentId">Occurrence précédente</string>
+    <string name="sync_field_deleted">Suppression</string>
+    <string name="sync_field_retracted">Retrait de l’occurrence</string>
+    <string name="sync_field_createdAt">Date de création</string>
+    <string name="sync_field_name">Nom</string>
+    <string name="sync_field_color">Couleur</string>
+    <string name="sync_pending_count">Modifications en attente : %1$d</string>
+    <string name="sync_conflict_field">Résoudre le conflit : %1$s</string>
+    <string name="sync_backup_description">Exporte les tâches et étiquettes. Les préférences et identifiants de connexion restent sur cet appareil.</string>
+    <string name="sync_import_description">Ajoute les tâches et étiquettes d’une sauvegarde, y compris les anciennes sauvegardes Android. Les tâches existantes et votre connexion sont conservées.</string>
+    <string name="sync_import_success">Tâches et étiquettes importées.</string>
+    <string name="native_sync_status">Synchronisation en direct sur le réseau privé</string>
+    <string name="sync_field_rollover">Reporter au lendemain</string>
+</resources>

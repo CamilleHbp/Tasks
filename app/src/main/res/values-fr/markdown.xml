@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="task_details_markdown_hint">Markdown pris en charge : **gras**, *italique*, # titres et listes. La mise en forme apparaît lors de la consultation de la tâche.</string>
+</resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Tâches</string>
     <string name="action_add_task">Ajouter une tâche</string>
     <string name="action_cancel">Annuler</string>
     <string name="action_save">Enregistrer</string>
@@ -112,7 +113,7 @@
     <string name="title_selected_count">%s sélectionnées</string>
     <string name="action_confirm">Confirmer</string>
     <string name="title_warning">Attention</string>
-    <string name="tip_delete_task">Vous allez supprimer %s tâches. Cette action est irréversible. Voulez-vous les supprimer ?</string>
+    <string name="tip_delete_task">Supprimer %s tâches ? Cette action est irréversible.</string>
     <string name="action_back">Retour</string>
     <string name="pref_about">À propos</string>
     <string name="pref_about_desc">À propos de cette application</string>
@@ -127,7 +128,7 @@
     <string name="pref_appearance_dynamic_color">Couleurs dynamiques</string>
     <string name="pref_appearance_dynamic_color_desc">Utiliser les couleurs du fond d’écran du système, à partir d’Android 12</string>
     <string name="pref_palette_style">Style de palette</string>
-    <string name="pref_palette_style_desc">Choisissez comment décliner la couleur du thème</string>
+    <string name="pref_palette_style_desc">Choisissez comment appliquer la couleur du thème</string>
     <string name="palette_tonal_spot">Tons doux</string>
     <string name="palette_neutral">Neutre</string>
     <string name="palette_vibrant">Vive</string>
@@ -154,7 +155,7 @@
     <string name="pref_category_todo_list">Liste des tâches</string>
     <string name="pref_view_on_github">Voir sur GitHub</string>
     <string name="pref_view_on_github_desc">Consultez le code source, signalez un problème ou proposez une amélioration</string>
-    <string name="tip_discard_changes">Vos modifications seront perdues si vous quittez l’éditeur. Voulez-vous quitter ?</string>
+    <string name="tip_discard_changes">Abandonner vos modifications non enregistrées ?</string>
     <string name="sorting_sequential">Ordre d’ajout</string>
     <string name="sorting_category">Catégorie</string>
     <string name="sorting_priority">Priorité</string>
@@ -165,13 +166,13 @@
     <string name="pref_haptic_feedback">Retour haptique</string>
     <string name="pref_haptic_feedback_desc">Émettre une légère vibration lors de certaines actions</string>
     <string name="tip_tips">Conseils</string>
-    <string name="pref_haptic_feedback_more_info">Activez d’abord le retour haptique dans les paramètres du système, généralement sous « Son et vibrations ».</string>
+    <string name="pref_haptic_feedback_more_info">Activez le retour haptique dans les paramètres du système, généralement sous « Son et vibrations ».</string>
     <string name="pref_data">Données</string>
     <string name="pref_data_desc">Sauvegarde, restauration et gestion des données</string>
     <string name="pref_backup">Sauvegarder</string>
-    <string name="pref_backup_desc">Enregistrer les données de VerveTwoDo sur votre appareil</string>
+    <string name="pref_backup_desc">Enregistrer les données de Tâches sur votre appareil</string>
     <string name="pref_restore">Restaurer</string>
-    <string name="pref_restore_desc">Restaurer les données de VerveTwoDo depuis un fichier .zip sur votre appareil</string>
+    <string name="pref_restore_desc">Restaurer les données depuis une sauvegarde .zip sur votre appareil</string>
     <string name="tip_backup_success">Sauvegarde réussie</string>
     <string name="tip_backup_failed">Échec de la sauvegarde</string>
     <string name="tip_restore_success">Restauration réussie. Redémarrez l’application pour charger les données</string>
@@ -180,7 +181,7 @@
     <string name="pref_secure_mode_desc">Empêcher les captures d’écran et protéger l’aperçu dans les applications récentes</string>
     <string name="label_more">Plus</string>
     <string name="label_enter_category_name">Saisir le nom de la catégorie</string>
-    <string name="accessibility_progress_tasks">%1$d tâches au total, dont %2$d terminées et %3$d à terminer.</string>
+    <string name="accessibility_progress_tasks">%1$d tâches : %2$d terminées, %3$d à terminer.</string>
     <string name="accessibility_progress_no_tasks">Aucune tâche pour le moment.</string>
     <string name="pref_category_category_management">Étiquettes</string>
     <string name="pref_category_data_management">Gestion des données</string>
@@ -209,17 +210,17 @@
     <string name="tip_search_task_not_found">Aucune tâche trouvée</string>
     <string name="title_today_task">Progression des tâches du jour</string>
     <string name="pref_text_field_auto_focus">Saisie automatique du titre</string>
-    <string name="pref_text_field_auto_focus_desc">Activer le champ du titre et ouvrir le clavier à l’ouverture de l’éditeur</string>
+    <string name="pref_text_field_auto_focus_desc">Ouvrir automatiquement le clavier lors de la modification d’une tâche</string>
     <string name="pref_dark_mode_desc1">Configurer le mode sombre de cette application</string>
     <string name="pref_pure_black_mode">Mode noir pur</string>
-    <string name="pref_pure_black_mode_desc">Utiliser un fond noir pur et atténuer les couleurs en mode sombre, adapté aux écrans OLED</string>
+    <string name="pref_pure_black_mode_desc">Utiliser un fond noir pur et atténuer les couleurs en mode sombre</string>
     <string name="pref_color_spec_version">Version de la spécification des couleurs</string>
     <string name="pref_dynamic_scheme_platform">Plateforme du thème dynamique</string>
     <string name="label_none">Aucun</string>
     <string name="time_next_week">La semaine prochaine</string>
     <string name="label_basic_information">Informations générales</string>
     <string name="pref_assist_in_translation">Contribuer à la traduction</string>
-    <string name="pref_assist_in_translation_desc">Aidez à traduire VerveTwoDo dans votre langue</string>
+    <string name="pref_assist_in_translation_desc">Aidez à traduire Tâches dans votre langue</string>
     <string name="pref_preview_color_system">Aperçu du nouveau système de couleurs</string>
     <string name="pref_preview_color_system_desc">Utiliser la spécification Spec2025 compatible avec Material 3 Expressive (expérimental)</string>
     <string name="pref_export_task">Exporter les tâches</string>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_schedule">Schedule</string>
+    <string name="editor_no_tags">No tags</string>
+    <string name="editor_add_details">Add details</string>
+    <string name="editor_expand_details">Show all details</string>
+    <string name="editor_collapse_details">Collapse details</string>
+    <string name="editor_add_item">Add item</string>
+    <string name="editor_subtask_removed">Subtask removed</string>
+    <string name="editor_subtasks_added">Subtasks added</string>
+    <string name="editor_find_tag">Find or add a tag</string>
+    <string name="editor_clear_tag_search">Clear tag search</string>
+    <string name="editor_assign_tag">Add “%1$s”</string>
+    <string name="editor_repeat_interval">Repeat interval</string>
+    <string name="editor_repeat_interval_hint">Enter a number from 1 to 999.</string>
+    <string name="editor_repeat_interval_edit">Edit repeat interval: %1$s</string>
+    <string name="choose_date">Choose date</string>
+    <string name="remove_due_date">Remove date</string>
+    <string name="priority_value">%1$d · %2$s</string>
+    <string name="repeat_title">Repeat</string>
+    <string name="repeat_none">Never</string>
+    <string name="repeat_daily">Daily</string>
+    <string name="repeat_weekly">Weekly</string>
+    <string name="repeat_monthly">Monthly</string>
+    <string name="repeat_yearly">Yearly</string>
+    <string name="repeat_needs_date">Choose a due date to set a repeat schedule.</string>
+    <string name="repeat_monthly_summary">%1$s · day %2$d</string>
+    <string name="repeat_yearly_summary">%1$s · from %2$s</string>
+    <string name="repeat_less">Decrease repeat interval</string>
+    <string name="repeat_more">Increase repeat interval</string>
+    <string name="repeat_explanation">Completing this task keeps it in history and creates the next occurrence. Shorter months use their last day.</string>
+    <string name="bulk_edit">Edit selected tasks</string>
+    <string name="bulk_edit_title">Edit %1$d tasks</string>
+    <string name="bulk_edit_hint">Only checked fields will change.</string>
+    <string name="bulk_apply">Apply changes</string>
+    <string name="bulk_change_tags">Change tags</string>
+    <string name="bulk_change_priority">Change priority</string>
+    <string name="bulk_change_date">Change due date</string>
+    <string name="bulk_tags_add">Add tags</string>
+    <string name="bulk_tags_remove">Remove tags</string>
+    <string name="bulk_tags_replace">Replace all tags</string>
+    <string name="bulk_tags_clear">All tags will be removed from the selected tasks.</string>
+    <string name="bulk_date_clear">Due dates and repeat schedules will be removed from the selected tasks.</string>
+    <string name="tag_previous">Previous tag</string>
+    <string name="tag_next">Next tag</string>
+    <string name="tag_swipe_hint">Swipe left or right to switch tags</string>
+    <plurals name="repeat_days">
+        <item quantity="one">Every %1$d day</item>
+        <item quantity="other">Every %1$d days</item>
+    </plurals>
+    <plurals name="repeat_weeks">
+        <item quantity="one">Every %1$d week</item>
+        <item quantity="other">Every %1$d weeks</item>
+    </plurals>
+    <plurals name="repeat_months">
+        <item quantity="one">Every %1$d month</item>
+        <item quantity="other">Every %1$d months</item>
+    </plurals>
+    <plurals name="repeat_years">
+        <item quantity="one">Every %1$d year</item>
+        <item quantity="other">Every %1$d years</item>
+    </plurals>
+    <string name="editor_date_time">Date &amp; time</string>
+    <string name="editor_edit_schedule">Edit date and time: %1$s</string>
+    <string name="editor_include_time">Include time</string>
+    <string name="editor_not_recurring">Does not repeat</string>
+    <string name="editor_edit_recurrence">Edit recurrence: %1$s</string>
+    <string name="editor_repeat_every">Repeat every</string>
+    <string name="editor_repeat_unit_days">Days</string>
+    <string name="editor_repeat_unit_weeks">Weeks</string>
+    <string name="editor_repeat_unit_months">Months</string>
+    <string name="editor_repeat_unit_years">Years</string>
+    <string name="editor_more_tags">Show all tags</string>
+    <string name="editor_interval">Interval</string>
+    <string name="editor_hour">Hour</string>
+    <string name="editor_minute">Minute</string>
+    <string name="editor_invalid_time">Use hours 00–23 and minutes 00–59.</string>
+    <string name="editor_type_date">Type a date</string>
+    <string name="editor_pick_date">Choose from calendar</string>
+    <string name="editor_pick_time">Choose time on a clock</string>
+    <string name="editor_type_time">Type a time</string>
+</resources>

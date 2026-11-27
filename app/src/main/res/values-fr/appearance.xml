@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="appearance_accent">Couleur d’accentuation</string>
+    <string name="appearance_accent_description">Choisissez une couleur pour l’application et les widgets. Ce choix désactive les couleurs du fond d’écran.</string>
+    <string name="appearance_custom_color">Couleur personnalisée</string>
+    <string name="appearance_hex_color">Couleur hexadécimale</string>
+    <string name="appearance_selected_color">Couleur sélectionnée : %1$s</string>
+    <string name="theme_ocean">Océan</string>
+    <string name="theme_forest">Forêt</string>
+    <string name="theme_teal">Bleu canard</string>
+    <string name="theme_lavender">Lavande</string>
+    <string name="theme_rose">Rose</string>
+    <string name="theme_sunset">Crépuscule</string>
+    <string name="appearance_preview">Aperçu</string>
+    <string name="appearance_preview_task">Préparer le week-end</string>
+    <string name="appearance_widget_transparency">Transparence des widgets</string>
+    <string name="appearance_widget_transparency_description">S’applique à tous les widgets. Le texte et les commandes restent opaques.</string>
+    <string name="appearance_transparency_percent">%1$d%% de transparence</string>
+    <string name="appearance_opaque">Opaque</string>
+    <string name="appearance_transparent">Transparent</string>
+    <string name="appearance_reset_transparency">Réinitialiser la transparence</string>
+</resources>

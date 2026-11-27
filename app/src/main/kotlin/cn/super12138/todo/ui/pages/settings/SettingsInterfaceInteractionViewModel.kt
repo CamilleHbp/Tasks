@@ -15,6 +15,14 @@ class SettingsInterfaceInteractionViewModel(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
     val localUiState = MutableStateFlow(SettingsInterfaceUiState())
+    val schedulingPreferences = settingsRepository.schedulingPreferencesFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), cn.super12138.todo.logic.SchedulingPreferences())
+    fun setTimePickerDial(value: Boolean) { viewModelScope.launch { settingsRepository.setTimePickerDial(value) } }
+    fun setDatePickerCalendar(value: Boolean) { viewModelScope.launch { settingsRepository.setDatePickerCalendar(value) } }
+    fun setFirstDayOfWeek(value: Int) { viewModelScope.launch { settingsRepository.setFirstDayOfWeek(value) } }
+    val rolloverDefault = settingsRepository.rolloverDefaultFlow.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    fun setRolloverDefault(value: Boolean) { viewModelScope.launch { settingsRepository.setRolloverDefault(value) } }
     val defaultDueTime = settingsRepository.defaultDueTimeFlow.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5000), cn.super12138.todo.logic.DEFAULT_DUE_TIME_MINUTES)
     fun setDefaultDueTime(minutes: Int) {

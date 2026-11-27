@@ -1,0 +1,11 @@
+<resources>
+    <string name="pref_language">Langue</string>
+    <string name="language_system">Selon le système</string>
+    <string name="debug_inset_direction">Direction : gauche, haut, droite, bas\n</string>
+    <string name="debug_gestures_padding">Marges des gestes :\n%1$s\n</string>
+    <string name="debug_drawing_padding">Marges d’affichage :\n%1$s\n</string>
+    <string name="debug_caption_bar">Barre de titre : %1$s, %2$s</string>
+    <string name="debug_navigation_bar">Barre de navigation : %1$s</string>
+    <string name="label_visible">Visible</string>
+    <string name="label_hidden">Masquée</string>
+</resources>

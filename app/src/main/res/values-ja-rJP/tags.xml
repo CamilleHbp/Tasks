@@ -2,8 +2,6 @@
 <resources>
     <string name="tag_color_wheel">色相環</string>
     <string name="tag_color_brightness">明るさ</string>
-    <string name="tag_manage">タグを管理</string>
-    <string name="tag_manage_description">すべてのタスクでタグの名前や色の変更、削除を行います。</string>
     <string name="tag_edit">タグを編集</string>
     <string name="tag_edit_named">タグ「%1$s」を編集</string>
     <string name="tag_create">新しいタグ</string>

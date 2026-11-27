@@ -26,11 +26,14 @@ fun TagManagementDialog(
     tag: String,
     onDismiss: () -> Unit,
     initialColor: Int? = null,
-    viewModel: SettingsDataCategoryViewModel = koinViewModel()
+    viewModel: SettingsDataCategoryViewModel = koinViewModel(),
+    onSaved: (String) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var name by rememberSaveable(tag) { mutableStateOf(tag) }
     var colorHex by rememberSaveable(tag) { mutableStateOf<String?>(null) }
+    var chosenIcon by rememberSaveable(tag) { mutableStateOf<String?>(null) }
+    val icon = chosenIcon ?: state.tagIcons[tag] ?: "tag"
     var confirmDelete by rememberSaveable(tag) { mutableStateOf(false) }
     LaunchedEffect(tag) { viewModel.clearError() }
     val color = colorHex ?: tagColorHex(initialColor ?: state.tagColors[tag]
@@ -39,35 +42,12 @@ fun TagManagementDialog(
     val duplicate = targetName != tag && state.categories.any {
         it != tag && it.trim().equals(targetName, ignoreCase = true)
     }
-    val count = state.usageCounts[tag] ?: 0
     val dismiss = { if (!state.isSaving) onDismiss() }
     val properties = DialogProperties(dismissOnBackPress = !state.isSaving, dismissOnClickOutside = !state.isSaving)
 
     if (confirmDelete) {
-        AlertDialog(
-            onDismissRequest = { if (!state.isSaving) confirmDelete = false },
-            icon = { Icon(painterResource(R.drawable.ic_delete), null) },
-            title = { Text(stringResource(R.string.tag_delete_title, tag)) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(if (count == 0) stringResource(R.string.tag_delete_unused)
-                        else pluralStringResource(R.plurals.tag_delete_message, count, count))
-                    state.error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { viewModel.deleteTag(tag, onDismiss) }, enabled = !state.isSaving,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-                    Text(stringResource(R.string.tag_delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDelete = false; viewModel.clearError() }, enabled = !state.isSaving) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-            },
-            properties = properties
-        )
+        TagDeleteDialog(tag, onDismiss = { confirmDelete = false }, onDeleted = onDismiss,
+            viewModel = viewModel)
         return
     }
 
@@ -86,6 +66,7 @@ fun TagManagementDialog(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     modifier = Modifier.fillMaxWidth()
                 )
+                CategoryIconPicker(icon, !state.isSaving) { chosenIcon = it }
                 TagColorPicker(color, onChange = { colorHex = it; viewModel.clearError() }, enabled = !state.isSaving)
                 state.error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
                 if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -102,7 +83,9 @@ fun TagManagementDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { viewModel.saveTag(tag.takeIf { it.isNotEmpty() }, name, parseTagColor(color)!!, onDismiss) },
+                onClick = { viewModel.saveTag(tag.takeIf { it.isNotEmpty() }, name, parseTagColor(color)!!, icon) {
+                    onSaved(targetName); onDismiss()
+                } },
                 enabled = !state.isSaving && name.isNotBlank() && !duplicate && parseTagColor(color) != null
             ) { Text(stringResource(R.string.action_save)) }
         },
@@ -110,5 +93,42 @@ fun TagManagementDialog(
             TextButton(onClick = dismiss, enabled = !state.isSaving) { Text(stringResource(R.string.action_cancel)) }
         },
         properties = properties
+    )
+}
+
+@Composable
+fun TagDeleteDialog(
+    tag: String,
+    onDismiss: () -> Unit,
+    onDeleted: () -> Unit = onDismiss,
+    viewModel: SettingsDataCategoryViewModel = koinViewModel()
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(tag) { viewModel.clearError() }
+    val count = state.usageCounts[tag] ?: 0
+    val dismiss = { if (!state.isSaving) { viewModel.clearError(); onDismiss() } }
+    AlertDialog(
+        onDismissRequest = dismiss,
+        icon = { Icon(painterResource(R.drawable.ic_delete), null) },
+        title = { Text(stringResource(R.string.tag_delete_title, tag)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(if (count == 0) stringResource(R.string.tag_delete_unused)
+                    else pluralStringResource(R.plurals.tag_delete_message, count, count))
+                state.error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { viewModel.deleteTag(tag, onDeleted) }, enabled = !state.isSaving,
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                Text(stringResource(R.string.tag_delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = dismiss, enabled = !state.isSaving) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+        properties = DialogProperties(dismissOnBackPress = !state.isSaving, dismissOnClickOutside = !state.isSaving)
     )
 }

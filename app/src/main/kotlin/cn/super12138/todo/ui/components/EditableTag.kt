@@ -44,7 +44,8 @@ fun EditableTag(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Box(Modifier.size(8.dp).background(Color(color), CircleShape))
+        TagArtwork(tag, Modifier.size(28.dp))
+        Box(Modifier.size(6.dp).background(Color(color), CircleShape))
         Text(tag, style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
     }

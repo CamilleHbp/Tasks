@@ -8,7 +8,8 @@ services:
     cap_drop: [ALL]
     tmpfs: [/tmp]
     environment:
-      PUBLIC_ORIGIN: https://todo.camille.studio
+      PUBLIC_ORIGIN: https://tasks.camille.studio
+      MIGRATION_ORIGIN: https://todo.camille.studio
       LEGACY_ORIGIN: https://vervetwodo-web.195-15-214-30.sslip.io
       SYNC_ORIGIN: https://vervetwodo.195-15-214-30.sslip.io
     volumes:

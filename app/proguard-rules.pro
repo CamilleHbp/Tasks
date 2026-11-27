@@ -25,3 +25,10 @@
 -keep class cn.super12138.todo.** implements androidx.glance.appwidget.action.ActionCallback {
     public <init>();
 }
+
+# Glance persists these names in its provider registry between APK versions.
+-keepnames class cn.super12138.todo.ui.widget.** extends androidx.glance.appwidget.GlanceAppWidget
+
+# gomobile calls generated JNI bindings through reflection.
+-keep class go.** { *; }
+-keep class mobile.** { *; }

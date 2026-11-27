@@ -6,7 +6,7 @@ test('desktop collections, favorites, filtering, dark appearance and keyboard na
  await page.getByLabel('Search tasks',{exact:true}).fill('garden');await expect(page.locator('.task-row')).toHaveCount(1);await page.getByLabel('Search tasks',{exact:true}).fill('');
  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByLabel('Appearance',{exact:true}).selectOption('dark');await page.getByRole('button',{name:'Done',exact:true}).click();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');await page.screenshot({path:'test-results/desktop-dark.png',fullPage:true});
  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByLabel('Appearance',{exact:true}).selectOption('light');await page.getByRole('button',{name:'Done',exact:true}).click();await page.screenshot({path:'test-results/desktop.png',fullPage:true});
- await page.keyboard.press('Control+n');await expect(page.getByRole('dialog',{name:'New task',exact:true})).toBeVisible();await page.getByLabel('Title',{exact:true}).fill('Draft');await page.keyboard.press('Escape');await expect(page.getByRole('dialog',{name:'Discard this draft?',exact:true})).toBeVisible();await page.getByRole('button',{name:'Discard',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);
+ await page.keyboard.press('Control+n');await expect(page.getByRole('dialog',{name:'New task',exact:true})).toBeVisible();await page.getByLabel('Title',{exact:true}).fill('Draft');await page.getByRole('button',{name:'Close',exact:true}).click();await expect(page.getByRole('dialog',{name:'Discard this draft?',exact:true})).toBeVisible();await page.getByRole('button',{name:'Discard',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 async function create(page: any, title: string) {
   await page.locator(".new-task").click();
@@ -25,14 +25,14 @@ test("create, markdown, checklist, metadata, recurrence, undo and offline reload
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await page.locator(".new-task").click();
-  await page.getByLabel("Title", { exact: true }).fill("Plan the weekend");
+  await page.getByLabel("Title", { exact: true }).fill("plan the weekend");
   await page.getByRole("button", { name: "Add notes" }).click();
   await page
     .getByLabel("Notes", { exact: true })
     .fill("**Trail map**\n<script>alert(1)</script>");
-  await page.getByLabel("Notes", { exact: true }).press("Escape");
+  await page.getByLabel("Notes", { exact: true }).press("Enter");
   await expect(page.locator(".notes-preview strong")).toHaveText("Trail map");
-  await expect(page.getByRole("button", {name: "Edit · Notes"})).toBeFocused();
+  await expect(page.locator(".task-layout")).toBeFocused();
   await page.locator(".notes-field").screenshot({path:"test-results/notes-preview-desktop.png"});
   await page.locator(".notes-preview strong").click();
   await page.locator(".notes-field").screenshot({path:"test-results/notes-edit-desktop.png"});
@@ -58,7 +58,7 @@ test("create, markdown, checklist, metadata, recurrence, undo and offline reload
     .click();
   await expect(page.locator(".task-row")).toHaveCount(1);
   await expect(page.locator(".metadata")).toContainText("Nov 14");
-  await page.getByRole("button", { name: "Undo last task change" }).click();
+  await page.getByRole("button", { name: "Undo completion" }).click();
   await expect(page.locator(".metadata")).toContainText("Nov 7");
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
@@ -71,6 +71,21 @@ test("create, markdown, checklist, metadata, recurrence, undo and offline reload
   await page.reload();
   await expect(page.getByText("Offline task", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
+});
+test("task tag choices stay alphabetical when selected", async ({ page }) => {
+  await page.goto("/");
+  for (const name of ["Zulu", "école", "apple"]) {
+    await page.getByRole("button", { name: "New tag", exact: true }).click();
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+  }
+  await create(page, "Ordered choices");
+  await page.getByText("Ordered choices", { exact: true }).click();
+  await page.getByRole("button", { name: "Edit · Tags", exact: true }).click();
+  const choices = page.getByRole("dialog").locator(".chips button");
+  await expect(choices).toContainText(["apple", "école", "Zulu"]);
+  await choices.last().click();
+  await expect(choices).toContainText(["apple", "école", "Zulu"]);
 });
 test("tags, edit rejection after another tab, and French preferences", async ({
   page,
@@ -89,8 +104,9 @@ test("tags, edit rejection after another tab, and French preferences", async ({
   await other.goto("/");
   await other.getByText("Shared draft", { exact: true }).click();
   await other.getByRole("button", { name: "Edit · Title", exact: true }).click();
-  await other.getByLabel("Title", { exact: true }).fill("Saved elsewhere");
+  await other.getByLabel("Title", { exact: true }).fill("écrire ailleurs");
   await other.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(other.getByRole("heading", { name: "Écrire ailleurs", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "changed while you were editing",
@@ -187,7 +203,7 @@ for (const [platform, userAgent, label, file] of widgetCases) {
     await expect(page).toHaveURL(/\/$/);
     await page.getByRole("button", { name: "Cancel", exact: true }).or(page.getByRole("button", { name: "Close", exact: true })).first().click();
     await page.getByRole("button", { name: "Settings", exact: true }).click();
-    await expect(page.getByText("VerveTwoDo Widgets is installed.", { exact: false })).toBeVisible();
+    await expect(page.getByText("Tasks Widgets is installed.", { exact: false })).toBeVisible();
   });
 }
 test("offers a one-command macOS install", async ({ page, context }) => {
@@ -196,7 +212,7 @@ test("offers a one-command macOS install", async ({ page, context }) => {
   await page.addInitScript(fakePlatform("macOS", userAgent), { platform: "macOS", userAgent, mobile: false, platformVersion: "15.0.0" });
   await page.goto("/");
   await page.getByRole("button", { name: "Settings", exact: true }).click();
-  const command = "curl -fsSL https://todo.camille.studio/install-widgets-macos.sh | sh";
+  const command = "curl -fsSL https://tasks.camille.studio/install-widgets-macos.sh | sh";
   await expect(page.getByText(command, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Copy command", exact: true }).click();
   await expect(page.getByText("Command copied. Paste it in Terminal.", { exact: true })).toBeVisible();
@@ -256,10 +272,18 @@ test("edit individual fields on a phone and keep their values after reopening", 
   await expect(dialog.getByRole("checkbox", {name:"Pack water"})).toBeChecked();
   await dialog.getByRole("button", {name:"Edit · Due date"}).click();
   await dialog.getByLabel("Due date", {exact:true}).fill("2027-01-09");
-  await dialog.getByRole("button", {name:"Save", exact:true}).click();
+  await expect(dialog.locator("footer").getByRole("button", {name:"Save", exact:true})).toBeVisible();
+  await expect(dialog.locator("form").getByRole("button", {name:"Save", exact:true})).toHaveCount(0);
+  await dialog.getByLabel("Due date", {exact:true}).press("Enter");
+  await expect(dialog.locator("form")).toBeFocused();
+  await expect(dialog.locator("footer").getByRole("button",{name:"Save"})).toBeVisible();
+  await page.keyboard.press("Enter");
   await dialog.getByRole("button", {name:"Edit · Title"}).click();
   await dialog.getByLabel("Title", {exact:true}).fill("Discard me");
-  await dialog.getByLabel("Title", {exact:true}).press("Escape");
+  await dialog.getByRole("radio", {name:"Urgent",exact:true}).click();
+  await dialog.getByRole("heading", {name:"Task details"}).click();
+  await page.keyboard.press("Escape");
+  await expect(dialog.getByRole("radio", {name:"High",exact:true})).toBeChecked();
   await expect(dialog.getByRole("heading", {name:"Walk the coast"})).toBeVisible();
   await dialog.getByRole("button", {name:"Close", exact:true}).last().click();
   await page.reload();
@@ -280,6 +304,9 @@ test("Escape dismisses one dialog at a time in fullscreen", async ({ page }) => 
   const task = page.getByRole("dialog", { name: "New task", exact: true });
   await task.getByLabel("Title", { exact: true }).fill("Keep the draft");
   await page.keyboard.press("Escape");
+  await expect(task.getByLabel("Title", {exact:true})).toHaveValue("");
+  await task.getByLabel("Title", {exact:true}).fill("Keep the draft");
+  await task.getByRole("button",{name:"Close",exact:true}).click();
   const discard = page.getByRole("dialog", { name: "Discard this draft?" });
   await expect(discard).toBeVisible();
   await page.keyboard.press("Escape");
@@ -288,7 +315,7 @@ test("Escape dismisses one dialog at a time in fullscreen", async ({ page }) => 
   await expect(task.getByLabel("Title", { exact: true })).toHaveValue("Keep the draft");
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
   await task.getByLabel("Title", { exact: true }).fill("");
-  await page.keyboard.press("Escape");
+  await task.getByRole("button",{name:"Close",exact:true}).click();
   await expect(task).toHaveCount(0);
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
 });
@@ -300,7 +327,7 @@ test("Markdown task items use checkboxes as their only marker", async ({ page })
   await page.getByRole("button", { name: "Add notes" }).click();
   const notes = page.getByLabel("Notes", { exact: true });
   await notes.fill("- [ ] Pack\n\n- [x] Book\n\n- Ordinary bullet\n  - [ ] Nested task");
-  await notes.press("Escape");
+  await notes.press("Enter");
   for (const selector of [".notes-preview .markdown", ".inline-markdown"]) {
     const items = page.locator(selector).locator("li");
     await expect(items).toHaveCount(4);
@@ -314,4 +341,40 @@ test("Markdown task items use checkboxes as their only marker", async ({ page })
       await page.getByRole("button", { name: "Save", exact: true }).click();
     }
   }
+});
+
+test("two Enter presses accept then save a title or time, and Escape reverts just the input", async ({page}) => {
+  await page.goto("/");
+  await create(page,"Book tickets");
+  await page.getByText("Book tickets",{exact:true}).click();
+  const task = page.getByRole("dialog",{name:"Task details"});
+  const title = task.getByLabel("Title",{exact:true});
+  const save = task.locator("footer").getByRole("button",{name:"Save"});
+  await task.getByRole("button",{name:"Edit · Title"}).click();
+  await title.fill("Book train tickets");
+  await title.press("Enter");
+  await expect(task.getByRole("heading",{name:"Book train tickets"})).toBeVisible();
+  await expect(save).toBeVisible();
+  await expect(page.locator(".task-title")).toHaveText("Book tickets");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".task-title")).toHaveText("Book train tickets");
+  await expect(save).toHaveCount(0);
+
+  await task.getByRole("button",{name:"Edit · Due date"}).click();
+  await task.getByLabel("Due date",{exact:true}).fill("2027-01-11");
+  await task.getByRole("switch",{name:"Set a time"}).check();
+  const minute = task.getByLabel("Time (24-hour), Minute");
+  await minute.fill("25");
+  await minute.press("Escape");
+  await expect(task.getByRole("button",{name:"Edit · Due date"})).toContainText("09:00");
+  await task.getByRole("button",{name:"Edit · Due date"}).click();
+  await minute.fill("45");
+  await minute.press("Enter");
+  await expect(save).toBeVisible();
+  await expect(task.getByRole("button",{name:"Edit · Due date"})).toContainText("09:45");
+  await page.keyboard.press("Enter");
+  await expect(save).toHaveCount(0);
+  await expect(task).toBeVisible();
+  await page.reload();
+  await expect(page.locator(".metadata")).toContainText("09:45");
 });

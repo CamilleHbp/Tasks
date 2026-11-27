@@ -1,92 +1,44 @@
 package cn.super12138.todo.ui.pages.editor
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.IconButton
-import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.ToggleButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import cn.super12138.todo.R
 import cn.super12138.todo.constants.Constants
 import cn.super12138.todo.logic.database.TaskEntity
-import cn.super12138.todo.logic.model.Priority
-import cn.super12138.todo.ui.VerveDoDefaults
-import cn.super12138.todo.ui.components.CheckboxWithLabel
 import cn.super12138.todo.ui.components.ConfirmDialog
-import cn.super12138.todo.ui.components.PriorityIcon
-import cn.super12138.todo.ui.components.TagTextField
-import cn.super12138.todo.ui.components.TagChip
-import cn.super12138.todo.ui.components.DueTimeDialog
-import cn.super12138.todo.logic.assignTagColors
-import cn.super12138.todo.logic.formatDueTime
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.OutlinedTextField
-import cn.super12138.todo.ui.components.TodoFloatingActionButton
-import cn.super12138.todo.ui.components.TopAppBarScaffold
-import cn.super12138.todo.ui.pages.editor.components.DueDateChooser
-import cn.super12138.todo.utils.VibrationUtils
-import cn.super12138.todo.utils.toggleButtonShapesIn
+import cn.super12138.todo.ui.pages.editor.components.*
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
 fun SharedTransitionScope.TaskAddPage(
     modifier: Modifier = Modifier,
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    initialTag: String = ""
 ) = TaskEditorPage(
     task = null,
     modifier = modifier
@@ -96,7 +48,8 @@ fun SharedTransitionScope.TaskAddPage(
             resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
         )
         .skipToLookaheadSize(), // 这个修饰符必须放后面
-    onNavigateUp = onNavigateUp
+    onNavigateUp = onNavigateUp,
+    initialCategory = initialTag
 )
 
 @Composable
@@ -127,38 +80,59 @@ fun TaskEditorPage(
     initialDueDateMillis: Long? = null,
     viewModel: EditorViewModel = koinViewModel { parametersOf(task) }
 ) {
-    val view = LocalView.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    val contentField = rememberTextFieldState(initialText = task?.content ?: "")
-
     val focusRequester = remember { FocusRequester() }
+    val composerFocus = remember { FocusRequester() }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val keyboard = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val saveError = stringResource(R.string.error_task_save)
+    val tagOrderError = stringResource(R.string.tag_change_failed)
+    val undoLabel = stringResource(R.string.widget_undo)
+    val removedLabel = stringResource(R.string.editor_subtask_removed)
+    val pastedLabel = stringResource(R.string.editor_subtasks_added)
     val saveLabel = stringResource(R.string.action_save)
-    var showTimePicker by remember { mutableStateOf(false) }
-    var validate by remember { mutableStateOf(false) } // @ChatGPT，用于判断用户是否按下了保存按钮。按下了开始进行错误检测
-    val isContentError by remember { derivedStateOf { validate && uiState.content.isBlank() } }
+    var validate by rememberSaveable { mutableStateOf(false) }
+    var moreExpanded by remember { mutableStateOf(false) }
+    var notesVisible by rememberSaveable { mutableStateOf(uiState.details.isNotBlank()) }
+    var notesExpanded by rememberSaveable { mutableStateOf(false) }
 
     fun navigateUpIfUnchanged() {
         if (uiState.isSaving) return
-        if (viewModel.isModified()) {
-            viewModel.showExitConfirmDialog()
-        } else {
-            onNavigateUp()
+        if (viewModel.isModified()) viewModel.showExitConfirmDialog() else onNavigateUp()
+    }
+
+    fun saveTask() {
+        validate = true
+        if (uiState.content.isBlank()) {
+            scope.launch {
+                listState.scrollToItem(0)
+                focusRequester.requestFocus()
+                keyboard?.show()
+            }
+        } else viewModel.saveNewTask()
+    }
+
+    fun addSteps(text: String = uiState.subtaskDraft, pastedList: Boolean = false) {
+        val added = viewModel.addSubtasks(text, pastedList)
+        composerFocus.requestFocus()
+        keyboard?.show()
+        if (added.size > 1) scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            if (snackbarHostState.showSnackbar(pastedLabel, undoLabel,
+                    withDismissAction = true, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) {
+                viewModel.undoAddedSubtasks(added.map { it.id }.toSet())
+            }
         }
     }
 
-    LaunchedEffect(quickAdd) {
-        if (quickAdd) viewModel.setCreationDefaults(initialCategory, initialDueDateMillis)
+    LaunchedEffect(quickAdd, initialCategory, initialDueDateMillis) {
+        viewModel.setCreationDefaults(initialCategory, initialDueDateMillis)
     }
-
     LaunchedEffect(quickAdd || uiState.shouldAutoFocusContent) {
-        if (quickAdd || uiState.shouldAutoFocusContent) {
-            focusRequester.requestFocus()
-        }
+        if (quickAdd || uiState.shouldAutoFocusContent) focusRequester.requestFocus()
     }
-
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             if (task != null && !task.isCompleted && uiState.isCompleted) viewModel.setConfettiVisibility(true)
@@ -168,262 +142,174 @@ fun TaskEditorPage(
     LaunchedEffect(uiState.saveFailed) {
         if (uiState.saveFailed) snackbarHostState.showSnackbar(saveError)
     }
-
-    LaunchedEffect(contentField) {
-        snapshotFlow { contentField.text.trim().toString() }
-            .collect { viewModel.setContentText(it) }
+    LaunchedEffect(viewModel, tagOrderError) {
+        viewModel.tagOrderErrors.collect { snackbarHostState.showSnackbar(tagOrderError) }
     }
-
     BackHandler(onBack = ::navigateUpIfUnchanged)
 
-    TopAppBarScaffold(
-        title = stringResource(if (task == null) R.string.action_add_task else R.string.title_edit_task),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        navigationIcon = {
-            FilledIconButton(
-                colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
-                shapes = IconButtonDefaults.shapes(),
-                onClick = {
-                    VibrationUtils.performHapticFeedback(view)
-                    navigateUpIfUnchanged()
-                }
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_back),
-                    contentDescription = stringResource(R.string.action_back)
-                )
-            }
-        },
-        floatingActionButton = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(VerveDoDefaults.contentPadding),
-                modifier = Modifier.imePadding()
-            ) {
-                if (task != null) {
-                    TodoFloatingActionButton(
-                        text = stringResource(R.string.action_delete),
-                        iconRes = R.drawable.ic_delete,
-                        expanded = true,
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        onClick = viewModel::showDeleteConfirmDialog
-                    )
-                }
-                TodoFloatingActionButton(
-                    text = if (uiState.isSaving) stringResource(R.string.action_saving) else saveLabel,
-                    iconRes = R.drawable.ic_save,
-                    expanded = true,
-                    modifier = Modifier.semantics { contentDescription = saveLabel },
-                    onClick = {
-                        validate = true
-
-                        if (uiState.content.isBlank()) {
-                            return@TodoFloatingActionButton
-                        }
-
-                        viewModel.saveNewTask()
+    Scaffold(
+        modifier = modifier.imePadding(),
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(if (task == null) R.string.action_add_task else R.string.title_edit_task)) },
+                navigationIcon = {
+                    IconButton(onClick = ::navigateUpIfUnchanged, enabled = !uiState.isSaving) {
+                        Icon(painterResource(R.drawable.ic_arrow_back), stringResource(R.string.action_back))
                     }
-                )
-            }
-        },
-        modifier = modifier
-    ) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(VerveDoDefaults.contentPadding * 2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = VerveDoDefaults.screenVerticalPadding)
-        ) {
-            item {
-                Subtitle(R.string.label_basic_information)
-                TextField(
-                    state = contentField,
-                    label = { Text(stringResource(R.string.placeholder_add_todo)) },
-                    lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 3),
-                    isError = isContentError,
-                    supportingText = {
-                        AnimatedVisibility(
-                            visible = isContentError,
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
-                        ) {
-                            Text(
-                                text = stringResource(R.string.error_no_content_entered),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                },
+                actions = {
+                    if (task != null) Box {
+                        IconButton(onClick = { moreExpanded = true }, enabled = !uiState.isSaving) {
+                            Icon(painterResource(R.drawable.ic_more), stringResource(R.string.view_more))
+                        }
+                        DropdownMenu(expanded = moreExpanded, onDismissRequest = { moreExpanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_delete)) },
+                                leadingIcon = { Icon(painterResource(R.drawable.ic_delete), null) },
+                                onClick = { moreExpanded = false; viewModel.showDeleteConfirmDialog() }
                             )
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                )
-            }
-            item {
-                OutlinedTextField(
-                    value = uiState.details,
-                    onValueChange = viewModel::setDetailsText,
-                    label = { Text(stringResource(R.string.task_details)) },
-                    minLines = 2,
-                    maxLines = 6,
-                    enabled = !uiState.isSaving,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            item {
-                Subtitle(R.string.task_subtasks)
-                if (uiState.subtasks.isEmpty()) Text(stringResource(R.string.task_subtasks_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            itemsIndexed(uiState.subtasks, key = { _, item -> item.id }) { index, item ->
-                val subtaskFocus = remember { FocusRequester() }
-                LaunchedEffect(item.id) { if (item.content.isEmpty()) subtaskFocus.requestFocus() }
-                OutlinedTextField(
-                    value = item.content,
-                    onValueChange = { viewModel.updateSubtask(item.id, it) },
-                    label = { Text(stringResource(R.string.task_subtask_label, index + 1)) },
-                    leadingIcon = {
-                        val checkLabel = stringResource(R.string.task_subtask_check, index + 1)
-                        Checkbox(checked = item.isCompleted,
-                            onCheckedChange = { viewModel.setSubtaskCompleted(item.id, it) },
+                    }
+                }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                Box(Modifier.fillMaxWidth().navigationBarsPadding(), contentAlignment = Alignment.Center) {
+                    Box(Modifier.widthIn(max = 680.dp).fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+                        Button(
                             enabled = !uiState.isSaving,
-                            modifier = Modifier.semantics { contentDescription = checkLabel })
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { viewModel.removeSubtask(item.id) }, enabled = !uiState.isSaving) {
-                            Icon(painterResource(R.drawable.ic_close), stringResource(R.string.task_subtask_remove, index + 1))
-                        }
-                    },
-                    enabled = !uiState.isSaving,
-                    modifier = Modifier.fillMaxWidth().focusRequester(subtaskFocus)
-                )
-            }
-            item {
-                TextButton(onClick = viewModel::addSubtask, enabled = !uiState.isSaving) {
-                    Icon(painterResource(R.drawable.ic_add), null)
-                    Text(stringResource(R.string.task_subtask_add), Modifier.padding(start = 8.dp))
-                }
-            }
-            item {
-                val colors = assignTagColors(uiState.tags, uiState.tagColors)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    uiState.tags.forEach { tag ->
-                        TagChip(tag, colors.getValue(tag), { viewModel.removeTag(tag) }, !uiState.isSaving)
-                    }
-                }
-                TagTextField(
-                    value = uiState.category,
-                    onValueChange = viewModel::setCategoryText,
-                    tags = uiState.categoryList - uiState.tags.toSet(),
-                    label = stringResource(R.string.tag_optional),
-                    enabled = !uiState.isSaving,
-                    onDone = { viewModel.addTag() },
-                    onTagSelected = { viewModel.addTag(it) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextButton(onClick = { viewModel.addTag() },
-                    enabled = uiState.category.isNotBlank() && !uiState.isSaving) {
-                    Text(stringResource(R.string.tag_add))
-                }
-            }
-            item {
-                val priorityList = Priority.entries
-
-                Subtitle(R.string.label_priority)
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
-                    verticalArrangement = Arrangement.spacedBy(VerveDoDefaults.contentPadding / 4)
-                ) {
-                    priorityList.forEachIndexed { index, priority ->
-                        ToggleButton(
-                            content = {
-                                PriorityIcon(priority, tint = LocalContentColor.current, contentDescription = null)
-                                Spacer(Modifier.size(8.dp))
-                                Text(stringResource(priority.nameRes))
-                            },
-                            checked = uiState.priority == priority,
-                            onCheckedChange = {
-                                viewModel.setPriority(priority)
-                                VibrationUtils.performHapticFeedback(view)
-                            },
-                            shapes = index toggleButtonShapesIn priorityList,
-                            colors = VerveDoDefaults.toggleButtonColors,
-                            modifier = Modifier.semantics { role = Role.RadioButton }
-                        )
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics { contentDescription = saveLabel },
+                            onClick = { saveTask() }
+                        ) { Text(if (uiState.isSaving) stringResource(R.string.action_saving) else saveLabel, textAlign = TextAlign.Center) }
                     }
                 }
             }
-            item {
-                Text(
-                    text = stringResource(R.string.label_more),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                DueDateChooser(
-                    dateMillis = uiState.dueDateMillis,
-                    onDateChange = { viewModel.setDueDate(it) }
-                )
-                if (uiState.dueDateMillis != null) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { showTimePicker = true }) {
-                            Text(uiState.dueTimeMinutes?.let { stringResource(R.string.due_time_value, formatDueTime(it)) }
-                                ?: stringResource(R.string.add_due_time))
-                        }
-                        if (uiState.dueTimeMinutes != null) TextButton(onClick = { viewModel.setDueTime(null) }) {
-                            Text(stringResource(R.string.remove_due_time))
-                        }
-                    }
-                }
-                if (task != null) {
-                    CheckboxWithLabel(
-                        label = stringResource(R.string.tip_mark_completed),
-                        checked = uiState.isCompleted,
-                        onCheckedChange = { viewModel.setCompleted(it) },
-                        modifier = Modifier.fillMaxWidth()
+        }
+    ) { insets ->
+        Box(Modifier.fillMaxSize().padding(insets), contentAlignment = Alignment.TopCenter) {
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
+                modifier = Modifier.widthIn(max = 680.dp).fillMaxWidth().fillMaxHeight().padding(horizontal = 20.dp)
+            ) {
+                item(key = "title") {
+                    TextField(
+                        value = uiState.content, onValueChange = viewModel::setContentText,
+                        label = { Text(stringResource(R.string.placeholder_add_todo)) },
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                        textStyle = MaterialTheme.typography.headlineSmall,
+                        minLines = 1, maxLines = 6, enabled = !uiState.isSaving,
+                        isError = validate && uiState.content.isBlank(),
+                        supportingText = if (validate && uiState.content.isBlank()) {{
+                            Text(stringResource(R.string.error_no_content_entered))
+                        }} else null,
+                        colors = editorTextFieldColors(),
+                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
                     )
                 }
-            }
-            item {
-                Spacer(Modifier.size(56.dp))
-            }
-            item {
-                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
+                item(key = "notes") {
+                    if (notesVisible || uiState.details.isNotBlank()) {
+                        TextField(
+                            value = uiState.details, onValueChange = viewModel::setDetailsText,
+                            label = { Text(stringResource(R.string.task_details)) },
+                            supportingText = { Text(stringResource(R.string.task_details_markdown_hint)) },
+                            minLines = 1, maxLines = if (notesExpanded) Int.MAX_VALUE else 3,
+                            enabled = !uiState.isSaving, colors = editorTextFieldColors(),
+                            modifier = Modifier.fillMaxWidth().onFocusChanged { if (it.isFocused) notesExpanded = true }
+                        )
+                        if (uiState.details.length > 140 || uiState.details.count { it == '\n' } > 2) {
+                            TextButton(onClick = { notesExpanded = !notesExpanded }) {
+                                Text(stringResource(if (notesExpanded) R.string.editor_collapse_details else R.string.editor_expand_details))
+                            }
+                        }
+                    } else {
+                        TextButton(onClick = { notesVisible = true }, enabled = !uiState.isSaving) {
+                            Icon(painterResource(R.drawable.ic_add), null, Modifier.size(20.dp))
+                            Text(stringResource(R.string.editor_add_details), Modifier.padding(start = 8.dp))
+                        }
+                    }
+                }
+                item(key = "subtasks-heading") {
+                    Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(stringResource(R.string.task_subtasks), Modifier.weight(1f),
+                            style = MaterialTheme.typography.titleMedium)
+                        if (uiState.subtasks.isNotEmpty()) Text(
+                            stringResource(R.string.task_subtasks_progress, uiState.subtasks.count { it.isCompleted }, uiState.subtasks.size),
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                itemsIndexed(uiState.subtasks, key = { _, item -> item.id }) { index, item ->
+                    EditorSubtaskRow(item, index, enabled = !uiState.isSaving,
+                        onChange = { viewModel.updateSubtask(item.id, it) },
+                        onCompleted = { viewModel.setSubtaskCompleted(item.id, it) },
+                        onNext = {
+                            scope.launch {
+                                listState.scrollToItem(3 + uiState.subtasks.size)
+                                withFrameNanos { }
+                                composerFocus.requestFocus()
+                                keyboard?.show()
+                            }
+                        },
+                        onRemove = {
+                            viewModel.removeSubtask(item.id)
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                if (snackbarHostState.showSnackbar(removedLabel, undoLabel,
+                                        withDismissAction = true, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) {
+                                    viewModel.restoreSubtask(item, index)
+                                }
+                            }
+                        })
+                }
+                item(key = "subtask-composer") {
+                    SubtaskComposer(
+                        value = uiState.subtaskDraft,
+                        onValueChange = {
+                            if (uiState.subtaskDraft.isEmpty() && it.length > 1 && (it.contains('\n') || it.contains('\r'))) addSteps(it, pastedList = true)
+                            else viewModel.setSubtaskDraft(it)
+                        },
+                        onAdd = { addSteps() }, enabled = !uiState.isSaving,
+                        focusRequester = composerFocus, itemCount = uiState.subtasks.size
+                    )
+                }
+                item(key = "schedule") {
+                    Column(Modifier.padding(top = 12.dp)) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(Modifier.height(20.dp))
+                        EditorSchedule(uiState.dueDateMillis, uiState.dueTimeMinutes,
+                            uiState.defaultDueTimeMinutes, uiState.recurrence, viewModel::setDueDate,
+                            viewModel::setSchedule, viewModel::setRecurrence, !uiState.isSaving, uiState.schedulingPreferences, uiState.rollover, viewModel::setRollover)
+                    }
+                }
+                item(key = "tags") {
+                    EditorTags(uiState.categoryList, uiState.tags, uiState.tagColors,
+                        onToggle = { if (it in uiState.tags) viewModel.removeTag(it) else viewModel.addTag(it) },
+                        onAdd = { viewModel.addTag(it) }, enabled = !uiState.isSaving,
+                        onReorder = if (task != null) viewModel::reorderTags else null)
+                }
+                item(key = "priority") {
+                    Box(Modifier.padding(top = 12.dp)) {
+                        EditorPrioritySlider(uiState.priority, viewModel::setPriority, !uiState.isSaving)
+                    }
+                }
             }
         }
     }
-
-    if (showTimePicker) DueTimeDialog(
-        initialMinutes = uiState.dueTimeMinutes ?: uiState.defaultDueTimeMinutes,
-        onConfirm = { viewModel.setDueTime(it); showTimePicker = false },
-        onDismiss = { showTimePicker = false }
-    )
-
     ConfirmDialog(
-        visible = uiState.showExitConfirmDialog,
-        iconRes = R.drawable.ic_undo,
+        visible = uiState.showExitConfirmDialog, iconRes = R.drawable.ic_undo,
         text = stringResource(R.string.tip_discard_changes),
-        onConfirm = {
-            viewModel.hideExitConfirmDialog()
-            onNavigateUp()
-        },
-        onDismiss = { viewModel.hideExitConfirmDialog() }
+        onConfirm = { viewModel.hideExitConfirmDialog(); onNavigateUp() },
+        onDismiss = viewModel::hideExitConfirmDialog
     )
-
     ConfirmDialog(
-        visible = uiState.showDeleteConfirmDialog,
-        iconRes = R.drawable.ic_delete,
+        visible = uiState.showDeleteConfirmDialog, iconRes = R.drawable.ic_delete,
         text = stringResource(R.string.tip_delete_task, 1),
-        onConfirm = {
-            viewModel.deleteTask()
-            onNavigateUp()
-        },
+        onConfirm = { viewModel.deleteTask(); onNavigateUp() },
         onDismiss = viewModel::hideDeleteConfirmDialog
     )
 }
-
-@Composable
-private fun LazyItemScope.Subtitle(@StringRes titleRes: Int) =
-    Text(
-        text = stringResource(titleRes),
-        style = MaterialTheme.typography.titleMedium
-    )

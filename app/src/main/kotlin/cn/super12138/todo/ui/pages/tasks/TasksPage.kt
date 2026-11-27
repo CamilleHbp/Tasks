@@ -65,8 +65,7 @@ fun SharedTransitionScope.TasksPage(
     toTaskAddPage: () -> Unit,
     toTaskEditPage: (TaskEntity) -> Unit,
     toTaskViewPage: (TaskEntity) -> Unit = toTaskEditPage,
-    viewModel: TaskViewModel = koinViewModel(),
-    toTagManager: (() -> Unit)? = null
+    viewModel: TaskViewModel = koinViewModel()
 ) {
     val animatedVisibilityScope = LocalNavAnimatedContentScope.current
     val fadeScaleTransition = fadeScale()
@@ -116,8 +115,7 @@ fun SharedTransitionScope.TasksPage(
                 onEnterSelectMode = viewModel::enterMultiSelectMode,
                 onSelectAll = { viewModel.selectVisibleAllTask(taskList) },
                 onDeleteSelectedTask = viewModel::showDeleteConfirmDialog,
-                onEnterSearchMode = viewModel::enterSearchMode,
-                onManageTags = toTagManager
+                onEnterSearchMode = viewModel::enterSearchMode
             )
         },
         floatingActionButton = {

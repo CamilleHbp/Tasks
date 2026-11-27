@@ -8,11 +8,43 @@ import androidx.sqlite.execSQL
 import cn.super12138.todo.constants.Constants
 
 @androidx.room3.ColumnTypeConverters(TaskConverters::class)
-@Database(entities = [TaskEntity::class], version = 8)
+@Database(entities = [TaskEntity::class, SyncEnvelope::class, SyncedTag::class], version = 12)
 abstract class TaskDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
 
     companion object {
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE todo ADD COLUMN rollover INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override suspend fun migrate(connection: androidx.sqlite.SQLiteConnection) {
+                connection.execSQL("ALTER TABLE sync_tags ADD COLUMN icon TEXT NOT NULL DEFAULT 'tag'")
+            }
+        }
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE todo ADD COLUMN sync_id TEXT NOT NULL DEFAULT ''")
+                connection.execSQL("UPDATE todo SET sync_id = lower(hex(randomblob(16)))")
+                connection.execSQL("CREATE UNIQUE INDEX index_todo_sync_id ON todo(sync_id)")
+                connection.execSQL("ALTER TABLE todo ADD COLUMN calendar_date TEXT NOT NULL DEFAULT ''")
+                connection.execSQL("ALTER TABLE todo ADD COLUMN time_zone TEXT NOT NULL DEFAULT ''")
+                connection.execSQL("ALTER TABLE todo ADD COLUMN sync_parent TEXT NOT NULL DEFAULT ''")
+                connection.execSQL("ALTER TABLE todo ADD COLUMN sync_deleted INTEGER NOT NULL DEFAULT 0")
+                connection.execSQL("ALTER TABLE todo ADD COLUMN sync_retracted INTEGER NOT NULL DEFAULT 0")
+                connection.execSQL("CREATE TABLE sync_state (id INTEGER NOT NULL PRIMARY KEY, revision INTEGER NOT NULL, journal TEXT NOT NULL, tagsImported INTEGER NOT NULL, sourceId TEXT NOT NULL)")
+                connection.execSQL("CREATE TABLE sync_tags (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, color INTEGER NOT NULL, deleted INTEGER NOT NULL)")
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE ${Constants.DB_TABLE_NAME} ADD COLUMN recurrence TEXT")
+                connection.execSQL("ALTER TABLE ${Constants.DB_TABLE_NAME} ADD COLUMN recurrence_parent_id INTEGER")
+            }
+        }
+
         val MIGRATION_7_8 = object : Migration(7, 8) {
             override suspend fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("ALTER TABLE ${Constants.DB_TABLE_NAME} ADD COLUMN subtasks TEXT NOT NULL DEFAULT '[]'")

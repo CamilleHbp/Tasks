@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_attention_title">Your devices have different versions</string>
+    <string name="sync_attention_description">Choose which value to keep for each conflict. Other fields stay unchanged. Your choice will be sent to your other devices.</string>
+    <string name="sync_remaining">Conflicts remaining: %1$d</string>
+    <string name="sync_keep">Keep this version</string>
+    <string name="sync_choose">Select a version to continue</string>
+    <string name="sync_source">From %1$s</string>
+    <string name="sync_unknown_device">Unknown device</string>
+    <string name="sync_unnamed">Untitled item</string>
+    <string name="sync_failure_title">Your devices may be out of sync</string>
+    <string name="sync_failure_hint">Your edits are saved on this device. Retry, or open sync settings to check your connection.</string>
+    <string name="sync_retry">Retry sync</string>
+    <string name="sync_open_settings">Sync settings</string>
+    <string name="sync_waiting">Sending your changes…</string>
+    <string name="sync_pending_hint">Some changes have not reached your other devices yet.</string>
+    <string name="sync_changed">This item changed on another device. Review the current versions and try again.</string>
+    <string name="sync_completed">Completed</string>
+    <string name="sync_todo">To do</string>
+    <string name="sync_deleted">Delete this item</string>
+    <string name="sync_kept">Keep this item</string>
+    <string name="sync_enabled">Enabled</string>
+    <string name="sync_disabled">Disabled</string>
+    <string name="sync_priority0">No priority</string>
+    <string name="sync_priority1">Low</string>
+    <string name="sync_priority2">Medium</string>
+    <string name="sync_priority3">High</string>
+    <string name="sync_priority4">Urgent</string>
+    <string name="sync_frequency_daily">day(s)</string>
+    <string name="sync_frequency_weekly">week(s)</string>
+    <string name="sync_frequency_monthly">month(s)</string>
+    <string name="sync_frequency_yearly">year(s)</string>
+    <string name="sync_field_icon">Icon</string>
+</resources>

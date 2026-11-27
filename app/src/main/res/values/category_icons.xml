@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="category_icon">Icon</string>
+    <string name="category_icon_tag">Default tag</string>
+    <string name="category_icon_cinema">Cinema</string>
+    <string name="category_icon_personal">Personal</string>
+    <string name="category_icon_work">Work</string>
+    <string name="category_icon_house">Home</string>
+    <string name="category_icon_chores">Chores</string>
+    <string name="category_icon_building">Building</string>
+    <string name="category_icon_computer">Computer</string>
+    <string name="category_icon_web">Web</string>
+    <string name="category_icon_travel">Travel</string>
+    <string name="category_icon_health">Health</string>
+    <string name="category_icon_learning">Learning</string>
+    <string name="category_icon_finance">Finance</string>
+    <string name="category_icon_music">Music</string>
+    <string name="category_icon_shopping">Shopping</string>
+    <string name="category_icon_cooking">Cooking</string>
+    <string name="category_icon_groceries">Groceries</string>
+    <string name="category_icon_gardening">Gardening</string>
+    <string name="category_icon_pets">Pets</string>
+    <string name="category_icon_sport">Sport</string>
+    <string name="category_icon_cycling">Cycling</string>
+    <string name="category_icon_car">Car</string>
+    <string name="category_icon_repairs">Repairs</string>
+    <string name="category_icon_laundry">Laundry</string>
+    <string name="category_icon_mail">Mail</string>
+    <string name="category_icon_phone">Phone</string>
+    <string name="category_icon_photography">Photography</string>
+    <string name="category_icon_art">Art</string>
+    <string name="category_icon_gaming">Gaming</string>
+    <string name="category_icon_gifts">Gifts</string>
+    <string name="category_icon_family">Family</string>
+    <string name="category_icon_coffee">Coffee</string>
+    <string name="category_icon_paperwork">Paperwork</string>
+    <string name="category_icon_tree">Tree</string>
+    <string name="category_icon_rock">Rock</string>
+    <string name="category_icon_sewing">Sewing</string>
+    <string name="category_icon_collectives">Collectives (activism)</string>
+</resources>

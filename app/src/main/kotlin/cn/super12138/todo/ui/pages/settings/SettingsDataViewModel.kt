@@ -26,7 +26,8 @@ import java.util.zip.ZipOutputStream
 
 class SettingsDataViewModel(
     private val taskRepository: TaskRepository,
-    private val csvWriter: CsvWriter
+    private val csvWriter: CsvWriter,
+    private val imports: cn.super12138.todo.logic.sync.TaskImports
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SettingsDataUiState())
     val uiState = _uiState.asStateFlow()
@@ -41,12 +42,8 @@ class SettingsDataViewModel(
     fun backupDataInZipFile(uri: Uri, context: Context, onResult: (completed: Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = runCatching {
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    ZipOutputStream(BufferedOutputStream(outputStream)).use { zipOutStream ->
-                        getBackupFiles(context).forEach { file ->
-                            FileUtils.addFileToZip(file, file.name, zipOutStream)
-                        }
-                    }
+                requireNotNull(context.contentResolver.openOutputStream(uri)).use { outputStream ->
+                    imports.export(outputStream)
                 }
             }.isSuccess
             withContext(Dispatchers.Main) { onResult(result) }
@@ -63,55 +60,11 @@ class SettingsDataViewModel(
     fun restoreAppData(uri: Uri, context: Context, onResult: (completed: Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = runCatching {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    ZipInputStream(BufferedInputStream(inputStream)).use { zipInputStream ->
-                        extractZipEntries(zipInputStream, context)
-                    }
+                requireNotNull(context.contentResolver.openInputStream(uri)).use { inputStream ->
+                    imports.import(inputStream, context)
                 }
             }.isSuccess
             withContext(Dispatchers.Main) { onResult(result) }
-        }
-    }
-
-    /**
-     * 获取要备份文件的文件列表
-     * * 数据库文件
-     * * 数据库的 wal 文件
-     * * 数据库的 shm 文件
-     * * DataStore Preferences 文件
-     */
-    private fun getBackupFiles(context: Context): List<File> {
-        val dbPath = context.getDatabasePath(Constants.DB_NAME)
-        val prefPath = "${context.filesDir}/datastore"
-        return listOf(
-            context.getDatabasePath(Constants.DB_NAME), // 数据库
-            File("$dbPath-wal"), // 数据库-wal
-            File("$dbPath-shm"), // 数据库-shm
-            File("$prefPath/${Constants.SP_NAME}.preferences_pb") // DataStore Preferences
-        ).filter { it.exists() }
-    }
-
-    /**
-     * 解压 zip 备份文件
-     *
-     * @param zipInputStream 备份文件中每个文件的输入流
-     * @param context 应用 Context
-     */
-    private fun extractZipEntries(zipInputStream: ZipInputStream, context: Context) {
-        val dbPath = context.getDatabasePath(Constants.DB_NAME).parent
-        val prefPath = "${context.filesDir}/datastore/"
-        generateSequence { zipInputStream.nextEntry }.forEach { zipEntry ->
-            val outputFile = File(
-                if (zipEntry.name.endsWith(".preferences_pb")) prefPath else dbPath,
-                zipEntry.name
-            )
-            if (zipEntry.isDirectory) {
-                outputFile.mkdirs()
-            } else {
-                outputFile.parentFile?.mkdirs()
-                FileOutputStream(outputFile).use { zipInputStream.copyTo(it) }
-            }
-            zipInputStream.closeEntry()
         }
     }
 
@@ -121,7 +74,7 @@ class SettingsDataViewModel(
             val tasks = taskRepository.getAllTasks().first()
 
             val header =
-                listOf("content", "category", "isCompleted", "priority", "dueDateMillis", "id", "createdAtMillis", "details", "tags", "dueTimeMinutes", "subtasks")
+                listOf("content", "category", "isCompleted", "priority", "dueDateMillis", "id", "createdAtMillis", "details", "tags", "dueTimeMinutes", "subtasks", "recurrence", "recurrenceParentId")
 
             val rows = tasks.map { task ->
                 with(task) {
@@ -136,13 +89,15 @@ class SettingsDataViewModel(
                         details,
                         kotlinx.serialization.json.Json.encodeToString(task.taskTags),
                         dueTimeMinutes?.toString() ?: "",
-                        kotlinx.serialization.json.Json.encodeToString(subtasks)
+                        kotlinx.serialization.json.Json.encodeToString(subtasks),
+                        recurrence.orEmpty(),
+                        recurrenceParentId?.toString().orEmpty()
                     )
                 }
             }
 
             val result = runCatching {
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                requireNotNull(context.contentResolver.openOutputStream(uri)).use { outputStream ->
                     outputStream.write(
                         csvWriter.writeAll(listOf(header) + rows)
                             .toByteArray(charset = Charsets.UTF_8)

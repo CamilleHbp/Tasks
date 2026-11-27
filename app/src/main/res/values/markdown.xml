@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="task_details_markdown_hint">Markdown supported: **bold**, *italic*, # headings, and lists. Formatting appears when viewing the task.</string>
+</resources>

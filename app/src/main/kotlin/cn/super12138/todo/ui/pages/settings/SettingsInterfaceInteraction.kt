@@ -30,7 +30,18 @@ fun SettingsInterface(
     viewModel: SettingsInterfaceInteractionViewModel = koinViewModel()
 ) {
     val uiState by viewModel.interfaceUiState.collectAsStateWithLifecycle()
+    val rolloverDefault by viewModel.rolloverDefault.collectAsStateWithLifecycle()
     val defaultDueTime by viewModel.defaultDueTime.collectAsStateWithLifecycle()
+    val scheduling by viewModel.schedulingPreferences.collectAsStateWithLifecycle()
+    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
+    var schedulingDialog by rememberSaveable { mutableStateOf(0) }
+    val weekOptions = listOf(SettingsRadioOptions(0, stringResource(R.string.scheduling_follow_system))) +
+        java.time.DayOfWeek.entries.map { SettingsRadioOptions(it.value,
+            it.getDisplayName(java.time.format.TextStyle.FULL_STANDALONE, locale)) }
+    val timeOptions = listOf(SettingsRadioOptions(0, stringResource(R.string.scheduling_clock)),
+        SettingsRadioOptions(1, stringResource(R.string.scheduling_keyboard)))
+    val dateOptions = listOf(SettingsRadioOptions(0, stringResource(R.string.scheduling_calendar)),
+        SettingsRadioOptions(1, stringResource(R.string.scheduling_keyboard)))
     var showDueTime by rememberSaveable { mutableStateOf(false) }
 
     val sortingList = SortingMethod.entries.map {
@@ -77,6 +88,26 @@ fun SettingsInterface(
             }
 
             item {
+                SettingsCategory(stringResource(R.string.scheduling_title))
+                SettingsItem(leadingIconRes = R.drawable.ic_clock,
+                    title = stringResource(R.string.scheduling_time_picker), titleMaxLines = Int.MAX_VALUE,
+                    description = timeOptions[if (scheduling.timePickerDial) 0 else 1].text,
+                    onClick = { schedulingDialog = 1 })
+            }
+            item {
+                SettingsItem(leadingIconRes = R.drawable.ic_agenda,
+                    title = stringResource(R.string.scheduling_date_picker), titleMaxLines = Int.MAX_VALUE,
+                    description = dateOptions[if (scheduling.datePickerCalendar) 0 else 1].text,
+                    onClick = { schedulingDialog = 2 })
+            }
+            item {
+                SettingsItem(leadingIconRes = R.drawable.ic_agenda,
+                    title = stringResource(R.string.scheduling_week_start), titleMaxLines = Int.MAX_VALUE,
+                    description = weekOptions.first { it.id == scheduling.firstDayOfWeek }.text,
+                    onClick = { schedulingDialog = 3 })
+                SettingsPlainBox(stringResource(R.string.scheduling_week_start_hint))
+            }
+            item {
                 SettingsItem(
                     leadingIconRes = R.drawable.ic_pending,
                     title = stringResource(R.string.pref_default_due_time),
@@ -85,6 +116,12 @@ fun SettingsInterface(
                 )
             }
 
+            item {
+                SwitchSettingsItem(leadingIconRes = R.drawable.ic_rollover,
+                    title = stringResource(R.string.rollover_default),
+                    description = stringResource(R.string.rollover_default_hint),
+                    checked = rolloverDefault, onCheckedChange = viewModel::setRolloverDefault)
+            }
             item {
                 SettingsCategory(stringResource(R.string.pref_category_global))
                 SwitchSettingsItem(
@@ -108,10 +145,32 @@ fun SettingsInterface(
             }
         }
 
-        if (showDueTime) DueTimeDialog(defaultDueTime,
+        if (showDueTime) DueTimeDialog(defaultDueTime, initialDial = scheduling.timePickerDial,
             onConfirm = { viewModel.setDefaultDueTime(it); showDueTime = false },
             onDismiss = { showDueTime = false })
 
+        if (schedulingDialog != 0) {
+            val options = when (schedulingDialog) { 1 -> timeOptions; 2 -> dateOptions; else -> weekOptions }
+            val current = when (schedulingDialog) {
+                1 -> if (scheduling.timePickerDial) 0 else 1
+                2 -> if (scheduling.datePickerCalendar) 0 else 1
+                else -> scheduling.firstDayOfWeek
+            }
+            SettingsRadioDialog(visible = true,
+                title = stringResource(when (schedulingDialog) {
+                    1 -> R.string.scheduling_time_picker
+                    2 -> R.string.scheduling_date_picker
+                    else -> R.string.scheduling_week_start
+                }), currentOptions = options.first { it.id == current }, options = options,
+                onSelect = {
+                    when (schedulingDialog) {
+                        1 -> viewModel.setTimePickerDial(it == 0)
+                        2 -> viewModel.setDatePickerCalendar(it == 0)
+                        else -> viewModel.setFirstDayOfWeek(it)
+                    }
+                    schedulingDialog = 0
+                }, onDismiss = { schedulingDialog = 0 })
+        }
         SettingsRadioDialog(
             visible = uiState.showSortingMethodDialog,
             title = stringResource(R.string.pref_sorting_method),

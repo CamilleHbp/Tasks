@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="appearance_accent">Accent colour</string>
+    <string name="appearance_accent_description">Choose a colour for the app and widgets. Selecting a colour turns off wallpaper colours.</string>
+    <string name="appearance_custom_color">Custom colour</string>
+    <string name="appearance_hex_color">Hex colour</string>
+    <string name="appearance_selected_color">Selected colour: %1$s</string>
+    <string name="theme_ocean">Ocean</string>
+    <string name="theme_forest">Forest</string>
+    <string name="theme_teal">Teal</string>
+    <string name="theme_lavender">Lavender</string>
+    <string name="theme_rose">Rose</string>
+    <string name="theme_sunset">Sunset</string>
+    <string name="appearance_preview">Preview</string>
+    <string name="appearance_preview_task">Plan the weekend</string>
+    <string name="appearance_widget_transparency">Widget transparency</string>
+    <string name="appearance_widget_transparency_description">Applies to all widgets. Text and controls stay opaque.</string>
+    <string name="appearance_transparency_percent">%1$d%% transparent</string>
+    <string name="appearance_opaque">Opaque</string>
+    <string name="appearance_transparent">Transparent</string>
+    <string name="appearance_reset_transparency">Reset transparency</string>
+</resources>
