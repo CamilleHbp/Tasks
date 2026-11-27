@@ -1,63 +1,31 @@
-![Upstream VerveDo UI](https://s2.loli.net/2026/02/09/EJS1HLOAvKyaRsl.png)
+# Tasks
 
-# VerveTwoDo
+Tasks 可以在 Android 和浏览器里管理待办事项。每项任务都可以设置日期、提醒、标签和重复规则，也可以添加笔记和可逐项勾选的清单。日程视图会把逾期未完成的事项和今天的任务放在一起。
 
-VerveTwoDo is a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Super12138 and contributors, licensed under GPL-3.0-only. It installs alongside upstream VerveDo as a separate app.
+这个项目最初派生自 Super12138 和其他贡献者开发的 [VerveDo](https://github.com/Super12138/VerveDo)，现在独立维护 Android 应用、桌面网页应用以及两者之间的同步。
 
-一个简单的、遵循 Material 3 Expressive 的待办应用，使用 Jetpack Compose 编写
+[English](README_EN.md) · [下载 Android 版](https://download.camille.studio) · [打开网页版](https://tasks.camille.studio)
 
-**简体中文** | [English](https://github.com/CamilleHbp/VerveTwoDo/blob/main/README_EN.md)
+## 桌面和手机
 
-[![Android CI](https://github.com/CamilleHbp/VerveTwoDo/actions/workflows/android_ci.yml/badge.svg)](https://github.com/CamilleHbp/VerveTwoDo/actions/workflows/android_ci.yml)
-![GitHub Release 最新版本](https://img.shields.io/github/v/release/CamilleHbp/VerveTwoDo?style=flat-square)
-![GitHub Release 总下载数](https://img.shields.io/github/downloads/CamilleHbp/VerveTwoDo/total?style=flat-square)
+在桌面上，可以按日期和标签筛选任务，保存常用视图。首次加载后可以离线使用。手机和电脑连接到同一私人工作区后便可同步。两台设备同时修改同一个字段时，可以选择保留哪个值。
 
-## 📦 版本支持
+![桌面任务视图，显示三项待办事项。](docs/screenshots/collection.png)
 
-支持 `Android 8.0 (Oreo)` 至 `Android 17.0 (Cinnamon Bun)`
+*自定义视图中的三项待办事项。*
 
-## 📃 许可证
+![打开一项任务后，可以编辑其中的清单。](docs/screenshots/checklist.png)
 
-[GPL-3.0-only](https://github.com/CamilleHbp/VerveTwoDo/blob/main/LICENSE)
+*在任务详情中逐项编辑清单。*
 
-## ✨ 功能
+Android 主屏幕的近期任务小组件可以单独设置标签和排序方式。轻点圆圈完成任务，轻点加号添加任务。
 
-- [x] Jetpack Compose
-- [x] Material 3 **Expressive** 设计
-- [x] 任务分类
-- [x] 任务优先级
-- [x] 数据备份
-- [x] 时间划分功能
-- ...
+## 安装与备份
 
-## ⬇️ Download
+从 VerveTwoDo 更新时，直接覆盖安装使用相同签名的 APK 即可保留数据。从上游 VerveDo 迁移时，先在其数据设置中导出 ZIP，再到 Tasks 中恢复。恢复会覆盖本地任务和偏好设置。CSV 只包含任务数据。Android 权限和主屏幕小组件需要另行设置。桌面 JSON 备份导入后会生成新的任务编号。
 
-Check [VerveTwoDo releases](https://github.com/CamilleHbp/VerveTwoDo/releases) for published builds, or build a debug APK with `./gradlew :app:assembleDebug`. APKs are written to `app/build/outputs/apk/debug/` with the `vervetwodo-` prefix.
+有关网页安装和同步的说明，请参阅[网页版指南](pwa/README.md)。运行 `./gradlew :app:assembleDebug` 可以构建 Android 调试版。
 
-The [F-Droid listing for VerveDo](https://f-droid.org/packages/cn.super12138.todo) distributes the upstream app.
+## 许可与致谢
 
-## Import from VerveDo
-
-1. In VerveDo, open **Settings → Data Management → Backup** and save a ZIP file to Downloads.
-2. Install VerveTwoDo alongside VerveDo. There is no need to uninstall the upstream app.
-3. In VerveTwoDo, open **Settings → Data Management → Restore**, select that ZIP, and restart when prompted.
-
-ZIP backups include tasks and in-app preferences. CSV exports contain task data only. Restoring replaces VerveTwoDo's data; it does not merge tasks or change the upstream app. Home-screen widgets and Android permissions need to be configured separately.
-
-## 📸 Upstream VerveDo screenshots
-
-| ![概览界面（浅色）](https://s2.loli.net/2026/02/09/nhuMmF8L7Oqk4dp.png) | ![概览界面（深色）](https://s2.loli.net/2026/02/09/Oari6zwC14gLPNl.png) |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| 概览界面（浅色）                                                        | 概览界面（深色）                                                        |
-| ![待办列表](https://s2.loli.net/2026/02/09/LbqGhyJXjke2gZ3.png)         | ![添加待办](https://s2.loli.net/2026/02/09/Da3h29rxFMmJQiV.png)         |
-| 待办列表                                                                | 添加待办                                                                |
-
-## 🤝 贡献
-你可以为 VerveTwoDo 贡献代码和翻译。
-贡献代码只需提交 Pull Request 即可，贡献翻译请[加入 Crowdin 项目](https://crowdin.com/project/vervedo)。若需提出新语言，请提交 Issue。
-
-Upstream VerveDo translations:
-
-<a href="https://crowdin.com/project/vervedo">
-    <img style="width:140; height:40px" src="./art/localization-at-white-rounded-bordered@1x.png" srcset="./art/localization-at-white-rounded-bordered@1x.png 1x,./art/localization-at-white-rounded-bordered@2x.png 2x" alt="VerveDo Crowdin 项目" />
-</a>
+Tasks 使用 [GPL-3.0-only](LICENSE) 许可证。第三方组件请参阅 [Android 许可声明](app/licences)。上游翻译来自 [VerveDo 翻译项目](https://crowdin.com/project/vervedo)。

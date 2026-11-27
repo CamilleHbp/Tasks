@@ -1,65 +1,33 @@
-![Upstream VerveDo UI](https://s2.loli.net/2026/02/09/zUrZdykbWN68lYM.png)
+# Tasks
 
-# VerveTwoDo
+Keep a task’s notes, checklist, due date and reminders together on Android or in your browser. Agenda shows what is due, including unfinished work from earlier days. Tags let you bring related tasks together across dates.
 
-VerveTwoDo is a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Super12138 and contributors, licensed under GPL-3.0-only. It installs alongside upstream VerveDo as a separate app.
+Tasks began as a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Super12138 and contributors. This project maintains the Android app, the desktop web app and their shared synchronization. It adds recurring tasks, per-task carry-forward, editable checklists and configurable widgets.
 
-A simple to-do app that follows Material 3 Expressive, using Jetpack Compose.
+[简体中文](README.md) · [Android downloads](https://download.camille.studio) · [Desktop web app](https://tasks.camille.studio)
 
-[简体中文](https://github.com/CamilleHbp/VerveTwoDo/blob/main/README.md) | **English**
+## On your desktop
 
-[![Android CI](https://github.com/CamilleHbp/VerveTwoDo/actions/workflows/android_ci.yml/badge.svg)](https://github.com/CamilleHbp/VerveTwoDo/actions/workflows/android_ci.yml)
-![GitHub latest release](https://img.shields.io/github/v/release/CamilleHbp/VerveTwoDo?style=flat-square)
-![GitHub all releases download](https://img.shields.io/github/downloads/CamilleHbp/VerveTwoDo/total?style=flat-square)
+Build a collection by choosing dates, tags and sort order. Favorite a task to find it from the sidebar. After the first load you can keep working offline. Connect Android and the web app to the same private workspace to synchronize changes. If two devices change the same field, you can choose which value to keep.
 
-# 📦 Supported Versions
+![The desktop collection displays three sample tasks and their completion controls.](docs/screenshots/collection.png)
 
-From `Android 8.0 (Oreo)` to `Android 17.0 (Cinnamon Bun)`
+*My collection with three undated tasks.*
 
-# 📃 License
+![A task open on the desktop with individual checklist steps.](docs/screenshots/checklist.png)
 
-[GPL-3.0-only](https://github.com/CamilleHbp/VerveTwoDo/blob/main/LICENSE)
+*Open a task to edit a checklist step or add another.*
 
-# ✨ Features
+## On Android
 
-- [x] Jetpack Compose
-- [x] Material 3 **Expressive** Design
-- [x] Task Categorization
-- [x] Task Priority
-- [x] Data Backup
-- [x] Time Segmentation
-- [x] Upcoming Tasks Widget with Tag Sorting and Filtering
-- ...
+Add **Upcoming tasks** from the widget picker. Earlier unfinished tasks appear above today’s work. Each widget remembers its own tags and sorting. Tap a circle to complete a task or tap **+** to add one with the selected date and tag.
 
-Add **Upcoming tasks** from the VerveTwoDo section of your home-screen widget picker. It shows tasks due today or later, with unfinished tasks from earlier days at the top in **À reprogrammer**. Missed due dates remain visible; completing or rescheduling a task removes it from that section. The selected tag filters and sort order also apply within this section. Use the separate Tags and Sort controls to select one or more categories and order by due date, creation date, priority, or title. The header chevron hides or shows the controls without clearing your selections. Tags correspond to task categories, and each widget saves its own settings. Tap **+** to create a task, with today and a single selected tag prefilled. Saving returns to the widget; a category is optional for quick creation. Tap a task's circle to complete it. Completed tasks due today or later stay in their group, shown in grey with a strikethrough below unfinished tasks and following the same sort order. Tap the checked circle to mark a task unfinished again.
+## Backups and installation
 
-# ⬇️ Download
+An update from VerveTwoDo uses the same Android application ID. Install it over the existing signed app to keep its data. To move from upstream VerveDo, export a ZIP in its data settings, then restore the ZIP in Tasks. Restoring replaces local tasks and preferences. CSV contains task data only. Configure Android permissions and widgets separately.
 
-Check [VerveTwoDo releases](https://github.com/CamilleHbp/VerveTwoDo/releases) for published builds, or build a debug APK with `./gradlew :app:assembleDebug`. APKs are written to `app/build/outputs/apk/debug/` with the `vervetwodo-` prefix.
+The web app also has a JSON backup. Import adds tasks with new IDs. See the [web app guide](pwa/README.md) for desktop installation, reminders and synchronization. For an Android development build, run `./gradlew :app:assembleDebug`.
 
-The [F-Droid listing for VerveDo](https://f-droid.org/packages/cn.super12138.todo) distributes the upstream app.
+## Credits and license
 
-# Import from VerveDo
-
-1. In VerveDo, open **Settings → Data Management → Backup** and save a ZIP file to Downloads.
-2. Install VerveTwoDo alongside VerveDo. There is no need to uninstall the upstream app.
-3. In VerveTwoDo, open **Settings → Data Management → Restore**, select that ZIP, and restart when prompted.
-
-ZIP backups include tasks and in-app preferences. CSV exports contain task data only. Restoring replaces VerveTwoDo's data; it does not merge tasks or change the upstream app. Home-screen widgets and Android permissions need to be configured separately.
-
-# 📸 Upstream VerveDo screenshots
-
-| ![Overview page (Light)](https://s2.loli.net/2026/02/09/p7L3vcZ4KnOHdol.png) | ![Overview page (Dark)](https://s2.loli.net/2026/02/09/gU9x3lpYvJXLfDs.png) |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Overview page (Light)                                                        | Overview page (Dark)                                                        |
-| ![Task list](https://s2.loli.net/2026/02/09/klB2e4XRYI98zdG.png)             | ![Add new task](https://s2.loli.net/2026/02/09/KXEGDWc1lfSRyCP.png)         |
-| Task list                                                                    | Add new task                                                                |
-
-## 🤝 Contributing
-You can contribute to VerveTwoDo by submitting code or translations. To contribute code, simply submit a Pull Request. Shared translations are maintained in [the upstream VerveDo Crowdin project](https://crowdin.com/project/vervedo). If you want to propose a new language, please submit an Issue.
-
-Upstream VerveDo translations:
-
-<a href="https://crowdin.com/project/vervedo">
-    <img style="width:140; height:40px" src="./art/localization-at-white-rounded-bordered@1x.png" srcset="./art/localization-at-white-rounded-bordered@1x.png 1x,./art/localization-at-white-rounded-bordered@2x.png 2x" alt="VerveDo Crowdin Project" />
-</a>
+Tasks uses [GPL-3.0-only](LICENSE). The [Android notices](app/licences) cover bundled components. Shared upstream translations come from the [VerveDo translation project](https://crowdin.com/project/vervedo).
