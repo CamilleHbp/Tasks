@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build VerveTwoDo's gomobile adapter against its pinned sync-core dependency."""
+"""Build Tasks' gomobile adapter against its pinned sync-core dependency."""
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 import zipfile
 
 root = Path(__file__).resolve().parents[1]
@@ -23,10 +24,12 @@ if not env.get('JAVA_HOME'):
 subprocess.run(['go', 'mod', 'verify'], cwd=module, env=env, check=True)
 subprocess.run(['go', 'build', '-o', str(tools / 'gobind'), 'golang.org/x/mobile/cmd/gobind'], cwd=module, env=env, check=True)
 env['PATH'] = str(tools) + os.pathsep + env['PATH']
-temporary = output.with_name('vervesync-building.aar')
-subprocess.run(['go', 'run', 'golang.org/x/mobile/cmd/gomobile', 'bind', '-target=android/arm64,android/amd64', '-androidapi=26', '-trimpath', '-ldflags=-s -w', '-o', str(temporary), './mobile'], cwd=module, env=env, check=True)
-with zipfile.ZipFile(temporary) as archive:
-    if archive.testzip() is not None:
-        raise RuntimeError('Invalid generated Android archive')
-temporary.replace(output)
+with tempfile.TemporaryDirectory(dir=tools) as staging:
+    temporary = Path(staging) / output.name
+    subprocess.run(['go', 'run', 'golang.org/x/mobile/cmd/gomobile', 'bind', '-target=android/arm64,android/amd64', '-androidapi=26', '-trimpath', '-ldflags=-s -w', '-o', str(temporary), './mobile'], cwd=module, env=env, check=True)
+    with zipfile.ZipFile(temporary) as archive:
+        if archive.testzip() is not None:
+            raise RuntimeError('Invalid generated Android archive')
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary.replace(output)
 print(output)

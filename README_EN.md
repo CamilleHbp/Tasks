@@ -10,6 +10,10 @@ Tasks began as a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Sup
 
 Build a collection by choosing dates, tags and sort order. Favorite a task to find it from the sidebar. After the first load you can keep working offline. Connect Android and the web app to the same private workspace to synchronize changes. If two devices change the same field, you can choose which value to keep.
 
+![Agenda groups three sample tasks under their due date.](docs/screenshots/agenda.png)
+
+*Agenda shows the tasks due today.*
+
 ![The desktop collection displays three sample tasks and their completion controls.](docs/screenshots/collection.png)
 
 *My collection with three undated tasks.*
@@ -17,6 +21,10 @@ Build a collection by choosing dates, tags and sort order. Favorite a task to fi
 ![A task open on the desktop with individual checklist steps.](docs/screenshots/checklist.png)
 
 *Open a task to edit a checklist step or add another.*
+
+![Android task details with notes and a three-step garden checklist.](docs/screenshots/android-checklist.png)
+
+*The Android task view keeps completed checklist steps visible.*
 
 ## On Android
 

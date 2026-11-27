@@ -68,5 +68,5 @@ if ! ditto "$new" "$target"; then
 fi
 for extension in "$target"/Contents/PlugIns/*.appex; do pluginkit -a "$extension" 2>/dev/null || true; done
 open "$target"
-say "Tasks Widgets is installed. Connect with your access code, then add VerveTwoDo from Edit Widgets." \
-    "Widgets Tâches est installé. Connectez-vous avec votre code d’accès, puis ajoutez VerveTwoDo depuis Modifier les widgets."
+say "Tasks Widgets is installed. Connect with your access code, then add Tasks from Edit Widgets." \
+    "Widgets Tâches est installé. Connectez-vous avec votre code d’accès, puis ajoutez Tâches depuis Modifier les widgets."
