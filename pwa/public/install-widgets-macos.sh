@@ -56,7 +56,7 @@ new="$work/app/$app_name"
 if [ -d "/Applications/$app_name" ] && [ -w /Applications ]; then target="/Applications/$app_name"; else
   mkdir -p "$HOME/Applications"; target="$HOME/Applications/$app_name"; fi
 
-say "Installing Tasks Widgets $version…" "Installation de Widgets Tâches $version…"
+say "Installing Tasks Widgets ${version}…" "Installation de Widgets Tâches ${version}…"
 osascript -e "tell application id \"$bundle_id\" to quit" >/dev/null 2>&1 || true
 for _ in 1 2 3 4 5 6 7 8 9 10; do pgrep -f "$app_name/Contents/MacOS/" >/dev/null || break; sleep 1; done
 pkill -f "$app_name/Contents/MacOS/" 2>/dev/null || true
