@@ -1,31 +1,34 @@
-# Tasks Web
+# Tasks for the web
 
-Tasks on desktop is an installable, offline-capable progressive web app (PWA). It can sync with Android through the same private workspace. The original Compose Multiplatform app is retired. [Legacy desktop source](../archive/desktop/README.md)
+Open [Tasks](https://tasks.camille.studio) to plan your day in a browser. To give Tasks its own window, choose **Install app**, **Add to Dock** or **Add to Home Screen** in your browser. After the first load you can work offline.
 
-## Use
+## Plan a day
 
-Open [Tasks Web](https://tasks.camille.studio). Use your browser’s **Install app**, **Add to Dock**, or **Add to Home Screen** command. After the first successful load, the application works offline.
+Give a task a due date to see it in **Agenda**. Open the task to write Markdown notes, set its priority or break it into checklist steps. For a repeating task, choose a daily, weekly, monthly or yearly schedule. Turn on carry-forward for unfinished work you want to see the following day.
 
-If you installed the earlier sslip.io edition, synchronize there first, then open and install this address and reconnect with your existing access code. Browser storage, preferences, and notification permissions are separate for each address. The earlier address remains available during the transition; export a backup there if you keep tasks local-only.
+Use **My collection** to keep your own date range, tag filters and sort order. **Favorites** is a shortcut to individual tasks. Deleting a tag keeps the tasks that used it.
 
-Tasks are stored in this browser’s IndexedDB database. In **Settings → Synchronization**, enter your workspace access code. Local tasks merge into the workspace, independent field edits merge, and competing values remain available for explicit resolution. **Disconnect** revokes the web session but retains this browser’s local tasks. Browser data clearing removes the local copy. Export a backup for independent safekeeping.
+<a href="../docs/screenshots/checklist.png"><img src="../docs/screenshots/checklist.png" width="600" alt="Desktop task editor with the garden checklist open"></a>
 
-The application supports:
+*Each checklist step has its own checkbox.*
 
-- Agenda and tag collections, text search, completion filters, six sort orders, collapsible date groups, favorites, and bulk edits.
-- Task details and editing, Markdown notes, ordered checklists, five priority levels, dates, explicit time zones, and daily/weekly/monthly/yearly recurrence with calendar anchors.
-- Per-task rollover, a default for new tasks, completion/deletion Undo that preserves subsequent edits, and stale-draft protection across tabs and sync updates.
-- Tag names, colors and the Mac category artwork; tag deletion preserves tasks.
-- Desktop JSON backup import/export and CSV export. Imports create fresh task identities and never replace existing tasks. Android ZIP backups are not accepted.
-- System/English/French language selection, system/light/dark appearance, compact rows, and keyboard shortcuts.
-- A configurable **My collection** view with date scope, any/all/untagged matching, date grouping, sorting, and category icons.
-- Foreground reminders and opt-in Web Push reminders for synchronized tasks, with default time and advance reminders. Completing, deleting, or rescheduling a task changes the server’s reminder eligibility.
+## Sync, reminders and widgets
 
-Browser applications cannot register desktop widgets themselves. On macOS and Windows 11, **Settings → Desktop widget** offers **Tasks Widgets**, a small companion that syncs with the same access code, shows your tasks in the system widgets, and opens tasks back in this app. It updates itself. **My collection** supplies the configurable task view inside the PWA. Local-only reminders require the page to run. Background reminders require synchronization, an active web session, browser push support, and notification permission. Browser/OS restrictions, offline devices, Focus modes, and expired sessions may delay or prevent delivery. On iOS/iPadOS, install the application on the Home Screen before enabling background reminders. Reconnect when the application requests session renewal.
+Open **Settings → Synchronization**. Use `https://tasks.camille.studio` and the same workspace code on your phone and computer. Offline changes sync when you reconnect. If two devices change the same field, choose which value to keep. Disconnecting revokes this browser’s session and keeps its local tasks.
+
+For a reminder while Tasks is closed, connect the workspace, enable push reminders and allow browser notifications. On iOS or iPadOS, install Tasks on the Home Screen first. With local reminders only, keep Tasks open.
+
+On macOS or Windows 11, open **Settings → Desktop widget** to install the companion, then connect it to your workspace. Select a task in the system widget to open it in Tasks.
+
+## Backups and earlier installs
+
+Export JSON for a backup or CSV for a spreadsheet. Importing JSON adds tasks with fresh IDs. Android ZIP backups belong in the Android app. If you used an earlier web address, sync or export local tasks there first. Each web address has its own storage and notification permission.
+
+[Android app and project credits](../README.md) · [Archived desktop app](../archive/desktop/README.md)
 
 ## Development
 
-Development requires Node.js 22.12 or newer, Go 1.27, and access to the pinned private `sync-core` module.
+Development requires Node.js 22.12 or newer, Go 1.27, and the pinned [sync-core](https://github.com/CamilleHbp/sync-core) module.
 
 ```sh
 cd pwa
@@ -60,10 +63,8 @@ The deployment script builds and tests the PWA and gateway, creates an immutable
 
 The service data is `/srv/homeserver/data/vervetwodo-web`; include it in server backups. Code releases live under `/srv/homeserver/builds/vervetwodo-web`, with `current` pointing at the active release. To roll back, run Docker Compose with project `vervetwodo-web` from a previous release directory, retaining the same data volume. The service worker offers updates for explicit reload after drafts are saved.
 
-This edition is served over HTTPS rather than distributed as an APK or desktop package. The native-app download catalogue remains unchanged.
+For self-hosted deployments, set `SYNC_ORIGIN` to the default native server and `SYNC_ORIGINS` to a comma-separated list of additional HTTPS origins. Each server gets its own replica, sessions and reminder subscriptions. For a multi-workspace gateway, set `SYNC_ROUTE_FILE` to a private JSON file mapping those configured origins to their distinct SHA-256 access-code verifiers. The hosted deployment reads the verifiers from each workspace database. Refresh the routing file and restart the gateway when rotating a workspace code.
 
 ## Credits and license
 
 Tasks builds on VerveDo by super12138. Category artwork and English/French application vocabulary are reused from this repository’s desktop resources. The application is distributed under the repository’s GPL-3.0 license. Third-party libraries retain their respective licenses in the dependency metadata.
-
-Use `https://tasks.camille.studio` in Tasks on Android, in the browser and in both widget companions. Your access code selects your workspace. When changing the address, enter the code again. Switching servers keeps each workspace’s tasks and queued changes in a separate local store. For self-hosted deployments, set `SYNC_ORIGIN` to the default native server and `SYNC_ORIGINS` to a comma-separated list of additional HTTPS origins. Each server gets its own replica, sessions and reminder subscriptions. For a multi-workspace gateway, set `SYNC_ROUTE_FILE` to a private JSON file mapping those configured origins to their distinct SHA-256 access-code verifiers. The hosted deployment reads the verifiers from each workspace database. Refresh the routing file and restart the gateway when rotating a workspace code.

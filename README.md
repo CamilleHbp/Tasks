@@ -1,41 +1,33 @@
 # Tasks
 
-Tasks 可以在 Android 和浏览器里管理待办事项。每项任务都可以设置日期、提醒、标签和重复规则，也可以添加笔记和可逐项勾选的清单。日程视图会把逾期未完成的事项和今天的任务放在一起。
+Plan your day on Android or in a browser. Give a task a due date to put it on your agenda, or leave it undated until you’re ready. Open it to keep notes and check off the steps along the way.
 
-这个项目最初派生自 Super12138 和其他贡献者开发的 [VerveDo](https://github.com/Super12138/VerveDo)，现在独立维护 Android 应用、桌面网页应用以及两者之间的同步。
+[Open Tasks](https://tasks.camille.studio) · [Download for Android](https://download.camille.studio/#vervetwodo) · [简体中文](README_ZH.md)
 
-[English](README_EN.md) · [下载 Android 版](https://download.camille.studio) · [打开网页版](https://tasks.camille.studio)
+## From a reminder to a checklist
 
-## 桌面和手机
+Suppose you need to prepare a garden bed this weekend. Add a task, choose Saturday and set a reminder. Put “measure the bed” and “pick up compost” in its checklist. Checking off one step keeps the task open. Complete the task itself when the bed is ready.
 
-在桌面上，可以按日期和标签筛选任务，保存常用视图。首次加载后可以离线使用。手机和电脑连接到同一私人工作区后便可同步。两台设备同时修改同一个字段时，可以选择保留哪个值。
+<a href="docs/screenshots/android-checklist.png"><img src="docs/screenshots/android-checklist.png" width="216" alt="Garden task on Android with notes and one of three checklist steps complete"></a>
 
-![日程视图中显示今天到期的三项任务。](docs/screenshots/agenda.png)
+*The garden task keeps the remaining steps beside the notes.*
 
-*日程按日期列出待办事项。*
+## Find your next task
 
-![桌面任务视图，显示三项待办事项。](docs/screenshots/collection.png)
+Open **Agenda** for dated tasks, including overdue work. On the web, use **My collection** to keep a view with your own dates, tags and sort order. On Android, add an **Upcoming tasks** widget to check things off from the home screen. Each widget remembers its own filters.
 
-*自定义视图中的三项待办事项。*
+<a href="docs/screenshots/agenda.png"><img src="docs/screenshots/agenda.png" width="600" alt="Desktop Agenda showing three dated tasks with completion controls"></a>
 
-![打开一项任务后，可以编辑其中的清单。](docs/screenshots/checklist.png)
+*Agenda groups tasks by due date. Open a title to see its notes and checklist.*
 
-*在任务详情中逐项编辑清单。*
+## Use the same list on another device
 
-Android 主屏幕的近期任务小组件可以单独设置标签和排序方式。轻点圆圈完成任务，轻点加号添加任务。
+Open **Synchronization**, use `https://tasks.camille.studio` and enter the same workspace code on each device. You can work offline after the first load. When two devices edit the same field, Tasks lets you choose which value to keep. The [web and widget guide](pwa/README.md) covers installation, reminders and the macOS and Windows companions.
 
-![Android 任务详情，显示笔记和三项园艺清单。](docs/screenshots/android-checklist.png)
+Install a signed update over VerveTwoDo to keep the Android data. Android data settings can import an older VerveDo ZIP. On the web, importing a JSON backup creates new task IDs. Use sync to keep the same tasks on two devices.
 
-*Android 任务详情中保留已完成的清单项目。*
+## Project and license
 
-## 安装与备份
+Tasks started as a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Super12138 and contributors. Tasks is maintained independently, including the browser app, shared workspaces, recurring tasks and widgets. Build the Android debug app with `./gradlew :app:assembleDebug`.
 
-从 VerveTwoDo 更新时，直接覆盖安装使用相同签名的 APK 即可保留数据。从上游 VerveDo 迁移时，先在其数据设置中导出 ZIP，再到 Tasks 中恢复。恢复会覆盖本地任务和偏好设置。CSV 只包含任务数据。Android 权限和主屏幕小组件需要另行设置。桌面 JSON 备份导入后会生成新的任务编号。
-
-有关网页安装和同步的说明，请参阅[网页版指南](pwa/README.md)。运行 `./gradlew :app:assembleDebug` 可以构建 Android 调试版。
-
-## 许可与致谢
-
-Tasks 使用 [GPL-3.0-only](LICENSE) 许可证。第三方组件请参阅 [Android 许可声明](app/licences)。上游翻译来自 [VerveDo 翻译项目](https://crowdin.com/project/vervedo)。
-
-[同步库源代码](https://github.com/CamilleHbp/sync-core/tree/v0.2.1)和 [Android 更新程序源代码](https://github.com/CamilleHbp/android-updater/tree/v1.0.5)均采用 Apache 2.0 许可证。
+[GPL-3.0-only](LICENSE) · [Android component notices](app/licences) · [Upstream translations](https://crowdin.com/project/vervedo) · [Sync library source](https://github.com/CamilleHbp/sync-core/tree/9a048b7e312bff76ecdedebdb2f273e316abc59f) · [Android updater source](https://github.com/CamilleHbp/android-updater/tree/v1.0.5)

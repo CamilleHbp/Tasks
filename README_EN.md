@@ -1,43 +1,33 @@
 # Tasks
 
-Keep a task’s notes, checklist, due date and reminders together on Android or in your browser. Agenda shows what is due, including unfinished work from earlier days. Tags let you bring related tasks together across dates.
+Plan your day on Android or in a browser. Give a task a due date to put it on your agenda, or leave it undated until you’re ready. Open it to keep notes and check off the steps along the way.
 
-Tasks began as a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Super12138 and contributors. This project maintains the Android app, the desktop web app and their shared synchronization. It adds recurring tasks, per-task carry-forward, editable checklists and configurable widgets.
+[Open Tasks](https://tasks.camille.studio) · [Download for Android](https://download.camille.studio/#vervetwodo) · [简体中文](README_ZH.md)
 
-[简体中文](README.md) · [Android downloads](https://download.camille.studio) · [Desktop web app](https://tasks.camille.studio)
+## From a reminder to a checklist
 
-## On your desktop
+Suppose you need to prepare a garden bed this weekend. Add a task, choose Saturday and set a reminder. Put “measure the bed” and “pick up compost” in its checklist. Checking off one step keeps the task open. Complete the task itself when the bed is ready.
 
-Build a collection by choosing dates, tags and sort order. Favorite a task to find it from the sidebar. After the first load you can keep working offline. Connect Android and the web app to the same private workspace to synchronize changes. If two devices change the same field, you can choose which value to keep.
+<a href="docs/screenshots/android-checklist.png"><img src="docs/screenshots/android-checklist.png" width="216" alt="Garden task on Android with notes and one of three checklist steps complete"></a>
 
-![Agenda groups three sample tasks under their due date.](docs/screenshots/agenda.png)
+*The garden task keeps the remaining steps beside the notes.*
 
-*Agenda shows the tasks due today.*
+## Find your next task
 
-![The desktop collection displays three sample tasks and their completion controls.](docs/screenshots/collection.png)
+Open **Agenda** for dated tasks, including overdue work. On the web, use **My collection** to keep a view with your own dates, tags and sort order. On Android, add an **Upcoming tasks** widget to check things off from the home screen. Each widget remembers its own filters.
 
-*My collection with three undated tasks.*
+<a href="docs/screenshots/agenda.png"><img src="docs/screenshots/agenda.png" width="600" alt="Desktop Agenda showing three dated tasks with completion controls"></a>
 
-![A task open on the desktop with individual checklist steps.](docs/screenshots/checklist.png)
+*Agenda groups tasks by due date. Open a title to see its notes and checklist.*
 
-*Open a task to edit a checklist step or add another.*
+## Use the same list on another device
 
-![Android task details with notes and a three-step garden checklist.](docs/screenshots/android-checklist.png)
+Open **Synchronization**, use `https://tasks.camille.studio` and enter the same workspace code on each device. You can work offline after the first load. When two devices edit the same field, Tasks lets you choose which value to keep. The [web and widget guide](pwa/README.md) covers installation, reminders and the macOS and Windows companions.
 
-*The Android task view keeps completed checklist steps visible.*
+Install a signed update over VerveTwoDo to keep the Android data. Android data settings can import an older VerveDo ZIP. On the web, importing a JSON backup creates new task IDs. Use sync to keep the same tasks on two devices.
 
-## On Android
+## Project and license
 
-Add **Upcoming tasks** from the widget picker. Earlier unfinished tasks appear above today’s work. Each widget remembers its own tags and sorting. Tap a circle to complete a task or tap **+** to add one with the selected date and tag.
+Tasks started as a fork of [VerveDo](https://github.com/Super12138/VerveDo) by Super12138 and contributors. Tasks is maintained independently, including the browser app, shared workspaces, recurring tasks and widgets. Build the Android debug app with `./gradlew :app:assembleDebug`.
 
-## Backups and installation
-
-An update from VerveTwoDo uses the same Android application ID. Install it over the existing signed app to keep its data. To move from upstream VerveDo, export a ZIP in its data settings, then restore the ZIP in Tasks. Restoring replaces local tasks and preferences. CSV contains task data only. Configure Android permissions and widgets separately.
-
-The web app also has a JSON backup. Import adds tasks with new IDs. See the [web app guide](pwa/README.md) for desktop installation, reminders and synchronization. For an Android development build, run `./gradlew :app:assembleDebug`.
-
-## Credits and license
-
-Tasks uses [GPL-3.0-only](LICENSE). The [Android notices](app/licences) cover bundled components. Shared upstream translations come from the [VerveDo translation project](https://crowdin.com/project/vervedo).
-
-The [sync library](https://github.com/CamilleHbp/sync-core/tree/v0.2.1) and [Android updater](https://github.com/CamilleHbp/android-updater/tree/v1.0.5) are available under Apache 2.0.
+[GPL-3.0-only](LICENSE) · [Android component notices](app/licences) · [Upstream translations](https://crowdin.com/project/vervedo) · [Sync library source](https://github.com/CamilleHbp/sync-core/tree/9a048b7e312bff76ecdedebdb2f273e316abc59f) · [Android updater source](https://github.com/CamilleHbp/android-updater/tree/v1.0.5)
