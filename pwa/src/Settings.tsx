@@ -12,7 +12,7 @@ import {
 import { IconLabel } from "./TaskIcon";
 import { Text } from "./i18n";
 import { Modal, Field, TimeInput } from "./components";
-import { connect, defaultSyncOrigin, disconnect, sync, SyncStatus } from "./sync";
+import { connect, discoverSync, disconnect, sync, SyncStatus } from "./sync";
 import { enablePush, disablePush } from "./push";
 import {
   WidgetPlatform,
@@ -348,13 +348,18 @@ export function SyncSettings({
   onClose,
   status,
 }: Props & { status: SyncStatus }) {
-  const [address, setAddress] = useState(data.syncOrigin || "");
+  const [draftAddress, setDraftAddress] = useState<string>();
+  const [discovery, setDiscovery] = useState<Awaited<ReturnType<typeof discoverSync>>>();
   useEffect(() => {
-    if (data.syncOrigin) {setAddress(data.syncOrigin); return;}
     let active = true;
-    void defaultSyncOrigin().then(url => { if (active) setAddress(value => value || url); }).catch(() => {});
+    void discoverSync().then(result => { if (active) setDiscovery(result); }).catch(() => {});
     return () => { active = false; };
-  }, [data.syncOrigin]);
+  }, []);
+  const defaultAddress = discovery?.publicOrigin?.startsWith("https://")
+    ? discovery.publicOrigin : discovery?.syncOrigin || "";
+  const savedAddress = data.syncAddress ?? (data.syncOrigin && data.syncOrigin !== discovery?.syncOrigin
+    ? data.syncOrigin : defaultAddress);
+  const address = draftAddress ?? savedAddress;
   const [code, setCode] = useState(""),
     [busy, setBusy] = useState(false);
   const issues = conflicts(data);
@@ -373,6 +378,7 @@ export function SyncSettings({
           try {
             await connect(code, address);
             setCode("");
+            setDraftAddress(undefined);
           } catch (e) {
             notice(e instanceof Error ? e.message : "syncError");
           } finally {
@@ -383,7 +389,7 @@ export function SyncSettings({
         <Field label={t("syncUrl")}>
           <input type="url" required value={address} placeholder="https://"
             autoCapitalize="none" autoCorrect="off" spellCheck={false}
-            onChange={e => setAddress(e.target.value)} />
+            onChange={e => setDraftAddress(e.target.value)} />
         </Field>
         <Field label={t("syncCode")}>
           <input

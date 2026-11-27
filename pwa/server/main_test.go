@@ -139,7 +139,7 @@ func TestSyncDiscovery(t *testing.T) {
 	g := setup(t)
 	r := request(g, "GET", "/.well-known/vervetwodo-sync", "", "", "")
 	var body map[string]string
-	if r.Code != 200 || json.Unmarshal(r.Body.Bytes(), &body) != nil || body["syncOrigin"] != "https://sync.example" {
+	if r.Code != 200 || json.Unmarshal(r.Body.Bytes(), &body) != nil || body["syncOrigin"] != "https://sync.example" || body["publicOrigin"] != g.origin {
 		t.Fatalf("%d %s", r.Code, r.Body.String())
 	}
 	if r := request(g, "POST", "/.well-known/vervetwodo-sync", g.origin, "", "{}"); r.Code != 405 {

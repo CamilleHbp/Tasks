@@ -12,10 +12,10 @@ export function onSync(fn: typeof listener) {
 function apiUrl(path: string, origin?: string) {
   return "/api/" + path + (origin ? "?" + new URLSearchParams({ workspace: origin }) : "");
 }
-export async function defaultSyncOrigin(): Promise<string> {
+export async function discoverSync(): Promise<{syncOrigin: string; publicOrigin?: string}> {
   const response = await fetch("/.well-known/vervetwodo-sync", { cache: "no-store" });
   if (!response.ok) throw Error("syncError");
-  return (await response.json()).syncOrigin;
+  return response.json();
 }
 export async function api(path: string, body: unknown = {}, workspace?: string) {
   const origin = workspace ?? (await read()).syncOrigin;
@@ -101,12 +101,12 @@ export async function connect(code: string, address: string) {
       throw Error();
     origin = url.origin;
   } catch { throw Error("invalidSyncUrl"); }
-  const primary = await defaultSyncOrigin();
+  const {syncOrigin: primary} = await discoverSync();
   // Discovery resolves the hosted web URL to its native sync server.
   const login = await api("login", { code }, origin);
-  origin = login.syncOrigin || (origin === location.origin ? primary : origin);
-  await activateWorkspace(origin, primary);
-  watch(origin);
+  const workspace = login.syncOrigin || (origin === location.origin ? primary : origin);
+  await activateWorkspace(workspace, primary, address.trim());
+  watch(workspace);
   await sync();
   const current = await read();
   if (current.preferences.push) await updatePush(current);

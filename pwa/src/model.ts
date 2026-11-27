@@ -73,6 +73,7 @@ export type Data = {
   outbox: Operation[];
   connected: boolean;
   syncOrigin?: string;
+  syncAddress?: string;
   source: string;
   preferences: Preferences;
   notified: Record<string, number>;

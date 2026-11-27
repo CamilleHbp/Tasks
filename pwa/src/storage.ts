@@ -59,7 +59,7 @@ export function subscribe(fn: () => void) {
 }
 
 // Keep pending edits and task IDs with the workspace that created them.
-export async function activateWorkspace(origin: string, defaultOrigin: string) {
+export async function activateWorkspace(origin: string, defaultOrigin: string, address: string) {
   const db = await open();
   return new Promise<void>((resolve, reject) => {
     const tx = db.transaction("state", "readwrite");
@@ -71,6 +71,7 @@ export async function activateWorkspace(origin: string, defaultOrigin: string) {
       function activate(next: Data) {
         next.connected = true;
         next.syncOrigin = origin;
+        next.syncAddress = address;
         next.revision = Math.max(previous.revision, next.revision) + 1;
         store.put(next, "data");
       }

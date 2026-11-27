@@ -122,7 +122,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			fail(w, 405)
 			return
 		}
-		send(w, 200, map[string]string{"syncOrigin": g.upstream})
+		send(w, 200, map[string]string{"syncOrigin": g.upstream, "publicOrigin": g.origin})
 		return
 	}
 	if !strings.HasPrefix(r.URL.Path, "/api/") {
