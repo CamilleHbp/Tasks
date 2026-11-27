@@ -4,7 +4,7 @@ Tasks 可以在 Android 和浏览器里管理待办事项。每项任务都可�
 
 这个项目最初派生自 Super12138 和其他贡献者开发的 [VerveDo](https://github.com/Super12138/VerveDo)，现在独立维护 Android 应用、桌面网页应用以及两者之间的同步。
 
-[English](README.md) · [下载 Android 版](https://download.camille.studio/#vervetwodo) · [打开网页版](https://tasks.camille.studio)
+[English](README.md) · [自行部署网页版和同步服务](https://github.com/CamilleHbp/sync-core/blob/main/docs/self-hosting.md)
 
 ## 桌面和手机
 

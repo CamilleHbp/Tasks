@@ -1,6 +1,6 @@
 # Archived: VerveTwoDo desktop app
 
-The Compose Multiplatform desktop app for macOS and Windows is retired. Tasks on desktop is now the web app (`pwa/`, https://tasks.camille.studio), and desktop widgets ship separately as Tasks Widgets (`native/`, `scripts/build-widgets-*.py`).
+The Compose Multiplatform desktop app for macOS and Windows is retired. Tasks on desktop is now the [web app](../../pwa/README.md), and desktop widgets ship separately as Tasks Widgets (`native/`, `scripts/build-widgets-*.py`).
 
 This folder keeps the last source for reference. It is not part of the Gradle build.
 

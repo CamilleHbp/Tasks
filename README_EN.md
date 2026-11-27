@@ -2,7 +2,7 @@
 
 Plan your day on Android or in a browser. Give a task a due date to put it on your agenda, or leave it undated until you’re ready. Open it to keep notes and check off the steps along the way.
 
-[Open Tasks](https://tasks.camille.studio) · [Download for Android](https://download.camille.studio/#vervetwodo) · [简体中文](README_ZH.md)
+[Self-host Tasks](https://github.com/CamilleHbp/sync-core/blob/main/docs/self-hosting.md) · [简体中文](README_ZH.md)
 
 ## From a reminder to a checklist
 
@@ -22,7 +22,7 @@ Open **Agenda** for dated tasks, including overdue work. On the web, use **My co
 
 ## Use the same list on another device
 
-Open **Synchronization**, use `https://tasks.camille.studio` and enter the same workspace code on each device. You can work offline after the first load. When two devices edit the same field, Tasks lets you choose which value to keep. The [web and widget guide](pwa/README.md) covers installation, reminders and the macOS and Windows companions.
+You can [self-host sync](https://github.com/CamilleHbp/sync-core/blob/main/docs/self-hosting.md). In **Synchronization**, enter your server’s HTTPS address and your workspace code on each device. You can work offline after the first load. When two devices edit the same field, Tasks lets you choose which value to keep. The [web and widget guide](pwa/README.md) covers installation, reminders and the macOS and Windows companions.
 
 Install a signed update over VerveTwoDo to keep the Android data. Android data settings can import an older VerveDo ZIP. On the web, importing a JSON backup creates new task IDs. Use sync to keep the same tasks on two devices.
 

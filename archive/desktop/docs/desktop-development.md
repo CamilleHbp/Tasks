@@ -1,10 +1,10 @@
 # Desktop development
 
-The desktop app has its own application identity, URL scheme, and local data directory. Android and desktop exchange task records through the independently versioned private `github.com/CamilleHbp/sync-core` Go module, pinned in `sync-engine/go.mod` and `desktop-helper/go.mod`. The `sync-engine` module contains VerveTwoDo's schema, gomobile adapter, and application server; it does not contain a copy of the synchronization engine.
+The desktop app has its own application identity, URL scheme, and local data directory. Android and desktop exchange task records through the independently versioned `github.com/CamilleHbp/sync-core` Go module, pinned in `sync-engine/go.mod` and `desktop-helper/go.mod`. The `sync-engine` module contains VerveTwoDo's schema, gomobile adapter, and application server; it does not contain a copy of the synchronization engine.
 
 ## Connect Android and macOS
 
-Open **Settings → Synchronization** on both devices. Use the same server address and access code. The homeserver endpoint is `https://vervetwodo.195-15-214-30.sslip.io`; its code is stored privately on the server in `/srv/homeserver/data/vervetwodo/access-code.json`. Never commit access codes or replica databases.
+Open **Settings → Synchronization** on both devices. Use the same server address and access code. See the [self-hosting guide](https://github.com/CamilleHbp/sync-core/blob/main/docs/self-hosting.md) to set up your own workspace.
 
 The current service provides one private owner workspace for personal device synchronization. Existing tasks are added on first connection. Tasks, tag colors, checklists, completion, recurrence, and scheduling fields synchronize; appearance, favorites, widget configuration, and reminder preferences stay on each device. Independent field edits merge; competing field values are listed in Synchronization for explicit resolution. Deletion remains a synchronized marker.
 
