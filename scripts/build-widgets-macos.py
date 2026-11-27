@@ -43,10 +43,12 @@ def build_helper(work):
 
 def build_companion(work):
     parts = []
+    platform = pathlib.Path(subprocess.check_output(["xcrun", "--sdk", "macosx", "--show-sdk-platform-path"], text=True).strip())
+    plugins = platform / "Developer/usr/lib/swift/host/plugins"
     sources = sorted((SOURCE / "Companion/Sources").glob("*.swift"))
     for arch in ARCHS:
         output = work / f"companion-{arch}"
-        run("swiftc", "-parse-as-library", "-O", "-target", f"{arch}-apple-macos14.0", "-module-name", "VerveTwoDoWidgets",
+        run("xcrun", "--sdk", "macosx", "swiftc", "-plugin-path", plugins, "-parse-as-library", "-O", "-target", f"{arch}-apple-macos14.0", "-module-name", "VerveTwoDoWidgets",
             "-module-cache-path", work / "swift-cache", *sources, "-o", output)
         parts.append(output)
     binary = work / "VerveTwoDoWidgets"

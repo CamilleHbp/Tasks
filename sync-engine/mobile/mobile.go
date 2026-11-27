@@ -52,6 +52,14 @@ func (c *Client) StopUpdates() {
 	}
 }
 
+// NewDeviceClient also migrates a saved Android session. Gateway replicas keep
+// their direct backend connection and use NewClient instead.
+func NewDeviceClient(directory string) (*Client, error) {
+	if err := tasks.MigrateAddress(directory); err != nil {
+		return nil, err
+	}
+	return NewClient(directory)
+}
 func NewClient(directory string) (*Client, error) {
 	client, err := appclient.New(directory, tasks.Config())
 	if err != nil {
@@ -89,6 +97,7 @@ func (c *Client) Call(method, payload string) string {
 		err = core.NewError("invalid_request", nil)
 	}
 	view, viewErr := c.inner.View()
+	view.Origin = tasks.DisplayAddress(view.Origin)
 	if err == nil {
 		err = viewErr
 	}

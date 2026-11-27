@@ -34,10 +34,13 @@ internal sealed class SettingsForm : Form
         if (IsDisposed) return;
         if (InvokeRequired) { BeginInvoke(Refresh); return; }
         // Keep typed connection details while rebuilding status rows.
-        if (!helper.Status.Authenticated && content.Controls.Find("origin", true).FirstOrDefault() is TextBox) { UpdateStatusLabels(); return; }
+        if (formAuthenticated == helper.Status.Authenticated && formOrigin == helper.Status.Origin && content.Controls.Find("origin", true).FirstOrDefault() is TextBox) { UpdateStatusLabels(); return; }
         Build();
     }
 
+    private string connectionMessage = "";
+    private bool formAuthenticated;
+    private string? formOrigin;
     private Label status = new(), update = new();
 
     private static Label Heading(string text) => new() { Text = text, AutoSize = true, Font = new Font(SystemFonts.MessageBoxFont!, FontStyle.Bold), Margin = new Padding(0, 12, 0, 4) };
@@ -55,6 +58,8 @@ internal sealed class SettingsForm : Form
         Text = L("app.name");
         content.SuspendLayout();
         content.Controls.Clear();
+        formAuthenticated = helper.Status.Authenticated;
+        formOrigin = helper.Status.Origin;
         content.Controls.Add(Heading(L("settings.workspace")));
         status = Note("");
         if (helper.Status.Authenticated)
@@ -64,22 +69,31 @@ internal sealed class SettingsForm : Form
             content.Controls.Add(Row(Button(L("settings.syncNow"), async (_, _) => await helper.SafeRequest("sync")),
                 Button(L("settings.disconnect"), async (_, _) => await Run(() => helper.Request("disconnect")))));
         }
-        else
         {
-            content.Controls.Add(Note(L("settings.connectHint")));
-            var origin = new TextBox { Name = "origin", Width = 320, PlaceholderText = "https://", AccessibleName = L("settings.origin") };
-            var code = new TextBox { Width = 320, UseSystemPasswordChar = true, AccessibleName = L("settings.code") };
+            if (!helper.Status.Authenticated) content.Controls.Add(Note(L("settings.connectHint")));
+            var origin = new TextBox { Name = "origin", Text = string.IsNullOrEmpty(helper.Status.Origin) ? Router.WebOrigin : helper.Status.Origin, Width = 320, PlaceholderText = "https://", AccessibleName = L("settings.origin") };
+            var code = new TextBox { PlaceholderText = helper.Status.Authenticated ? "********" : "", Width = 320, UseSystemPasswordChar = true, AccessibleName = L("settings.code") };
+            origin.TextChanged += (_, _) => { code.Clear(); code.PlaceholderText = helper.Status.Authenticated && origin.Text == helper.Status.Origin ? "********" : ""; };
+            var feedback = Note("");
             content.Controls.Add(new Label { Text = L("settings.origin"), AutoSize = true });
             content.Controls.Add(origin);
             content.Controls.Add(new Label { Text = L("settings.code"), AutoSize = true });
             content.Controls.Add(code);
             var connect = Button(L("settings.connect"), async (_, _) =>
             {
-                await Run(() => helper.Request("connect", new() { ["origin"] = origin.Text.Trim(), ["code"] = code.Text.Trim() }));
-                code.Text = "";
+                try {
+                    await helper.Request("connect", new() { ["origin"] = origin.Text.Trim(), ["code"] = code.Text.Trim() });
+                    code.Clear();
+                    connectionMessage = L("settings.success");
+                } catch (HelperException error) { connectionMessage = error.Message; }
+                if (content.Controls.Find("feedback", true).FirstOrDefault() is Label result) result.Text = connectionMessage;
             });
+            feedback.Name = "feedback"; feedback.Text = connectionMessage;
+            connect.Enabled = false;
+            code.TextChanged += (_, _) => connect.Enabled = origin.Text.Trim().Length > 0 && code.Text.Trim().Length > 0;
             AcceptButton = connect;
             content.Controls.Add(Row(connect));
+            content.Controls.Add(feedback);
             content.Controls.Add(status);
         }
 

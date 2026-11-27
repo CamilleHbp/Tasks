@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/CamilleHbp/Tasks/sync-engine v0.0.0
-	github.com/CamilleHbp/sync-core v0.2.1
+	github.com/CamilleHbp/sync-core v0.2.2-0.20261127143051-9a048b7e312b
 )
 
 require (

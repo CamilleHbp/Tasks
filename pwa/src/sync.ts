@@ -12,7 +12,7 @@ export function onSync(fn: typeof listener) {
 function apiUrl(path: string, origin?: string) {
   return "/api/" + path + (origin ? "?" + new URLSearchParams({ workspace: origin }) : "");
 }
-export async function discoverSync(): Promise<{syncOrigin: string; publicOrigin?: string}> {
+export async function discoverSync(): Promise<{syncOrigin: string; publicOrigin?: string; primaryWorkspace?: string}> {
   const response = await fetch("/.well-known/vervetwodo-sync", { cache: "no-store" });
   if (!response.ok) throw Error("syncError");
   return response.json();
@@ -101,10 +101,21 @@ export async function connect(code: string, address: string) {
       throw Error();
     origin = url.origin;
   } catch { throw Error("invalidSyncUrl"); }
-  const {syncOrigin: primary} = await discoverSync();
+  const discovery = await discoverSync();
+  const primary = discovery.primaryWorkspace || discovery.syncOrigin;
   // Discovery resolves the hosted web URL to its native sync server.
   const login = await api("login", { code }, origin);
   const workspace = login.syncOrigin || (origin === location.origin ? primary : origin);
+  const previous = await read();
+  if (previous.connected && (previous.syncOrigin || primary) !== workspace) {
+    try { await api("logout", {}, previous.syncOrigin || primary); }
+    catch (error) {
+      if (!(error instanceof Error && error.message === "signIn")) {
+        await api("logout", {}, workspace);
+        throw error;
+      }
+    }
+  }
   await activateWorkspace(workspace, primary, address.trim());
   watch(workspace);
   await sync();

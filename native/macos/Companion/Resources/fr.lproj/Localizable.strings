@@ -19,6 +19,7 @@
 "settings.disconnect" = "Se déconnecter";
 "settings.connectHint" = "Saisissez le code d’accès utilisé dans Tâches. Ce Mac conserve la connexion à votre espace de travail après les redémarrages et les mises à jour.";
 "settings.confirmDisconnect" = "Déconnecter ce Mac de l’espace de travail enregistré ?";
+"settings.success" = "Connecté à votre espace privé.";
 "settings.origin" = "Adresse de l’espace de travail";
 "settings.code" = "Code d’accès";
 "settings.connect" = "Se connecter";

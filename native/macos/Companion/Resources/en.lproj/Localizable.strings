@@ -19,6 +19,7 @@
 "settings.disconnect" = "Disconnect";
 "settings.connectHint" = "Enter the access code you use in Tasks. This Mac remembers the workspace across restarts and updates.";
 "settings.confirmDisconnect" = "Disconnect this Mac from the saved workspace?";
+"settings.success" = "Connected to your private workspace.";
 "settings.origin" = "Workspace address";
 "settings.code" = "Access code";
 "settings.connect" = "Connect";

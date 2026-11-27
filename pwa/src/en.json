@@ -156,6 +156,7 @@
   "storageLimit": "This change exceeds the 3 MB task-data limit. Shorten the notes or choose a smaller backup.",
   "syncTitle": "Synchronization",
   "syncDescription": "Connect your devices with the same server and access code. Existing tasks are added to your private workspace.",
+  "syncInvalidCode": "Access code rejected. Check the code and try again.",
   "syncConnected": "Connected to your private workspace",
   "syncDisconnected": "Connect Android and desktop",
   "syncPending": "Pending changes",

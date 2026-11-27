@@ -156,6 +156,7 @@
   "storageLimit": "Cette modification dépasse la limite de 3 Mo de données. Raccourcissez les notes ou choisissez une sauvegarde plus petite.",
   "syncTitle": "Synchronisation",
   "syncDescription": "Connectez vos appareils avec le même serveur et code d’accès. Les tâches existantes sont ajoutées à votre espace privé.",
+  "syncInvalidCode": "Code d’accès refusé. Vérifiez le code et réessayez.",
   "syncConnected": "Connecté à votre espace privé",
   "syncDisconnected": "Connecter Android et le bureau",
   "syncPending": "Modifications en attente",

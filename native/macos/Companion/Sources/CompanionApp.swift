@@ -162,19 +162,20 @@ struct SettingsView: View {
                                 Button(L("settings.disconnect"), role: .destructive) { run { _ = try await helper.request("disconnect") } }
                             }
                     }
-                } else {
-                    Text(L("settings.connectHint")).font(.callout).foregroundStyle(.secondary)
-                    TextField(L("settings.origin"), text: $origin, prompt: Text(verbatim: "https://"))
-                    SecureField(L("settings.code"), text: $code)
+                }
+                if helper.receivedStatus {
+                    if !helper.status.authenticated { Text(L("settings.connectHint")).font(.callout).foregroundStyle(.secondary) }
+                    TextField(L("settings.origin"), text: $origin).onChange(of: origin) { _,_ in code = ""; message = nil }
+                    SecureField(L("settings.code"), text: $code, prompt: Text(verbatim: helper.status.authenticated && origin == helper.status.origin ? "********" : ""))
                     Button(L("settings.connect")) {
                         let origin = origin, code = code
                         run {
                             try await helper.request("connect", ["origin": origin, "code": code])
-                            self.code = ""
+                            self.code = ""; message = L("settings.success")
                         }
                     }.disabled(origin.isEmpty || code.isEmpty || working).keyboardShortcut(.defaultAction)
                 }
-                if let message { Text(message).font(.callout).foregroundStyle(.red) }
+                if let message { Text(message).font(.callout).foregroundStyle(.primary) }
             }
             Section(L("settings.preferences")) {
                 Picker(L("settings.language"), selection: $language) {
@@ -204,6 +205,7 @@ struct SettingsView: View {
                 }
             }
         }
+        .onChange(of: helper.status.origin, initial: true) { _, saved in if !saved.isEmpty { origin = saved } }
         .formStyle(.grouped)
         .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)

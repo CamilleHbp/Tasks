@@ -356,10 +356,13 @@ export function SyncSettings({
     return () => { active = false; };
   }, []);
   const defaultAddress = discovery?.publicOrigin?.startsWith("https://")
-    ? discovery.publicOrigin : discovery?.syncOrigin || "";
-  const savedAddress = data.syncAddress ?? (data.syncOrigin && data.syncOrigin !== discovery?.syncOrigin
+    ? discovery.publicOrigin : discovery?.syncOrigin || "https://tasks.camille.studio";
+  const legacyAddress = /^https:\/\/vervetwodo(?:-emy)?\.195-15-214-30\.sslip\.io\/?$/;
+  const previousAddress = data.syncAddress ?? (data.syncOrigin && data.syncOrigin !== discovery?.syncOrigin
     ? data.syncOrigin : defaultAddress);
+  const savedAddress = legacyAddress.test(previousAddress) ? "https://tasks.camille.studio" : previousAddress;
   const address = draftAddress ?? savedAddress;
+  const [feedback, setFeedback] = useState("");
   const [code, setCode] = useState(""),
     [busy, setBusy] = useState(false);
   const issues = conflicts(data);
@@ -375,12 +378,14 @@ export function SyncSettings({
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
+          setFeedback("");
           try {
             await connect(code, address);
             setCode("");
             setDraftAddress(undefined);
+            setFeedback("syncConnected");
           } catch (e) {
-            notice(e instanceof Error ? e.message : "syncError");
+            setFeedback(e instanceof Error && e.message === "signIn" ? "syncInvalidCode" : e instanceof Error && ["unknownSyncServer","rateLimited","invalidSyncUrl"].includes(e.message) ? e.message : "syncError");
           } finally {
             setBusy(false);
           }
@@ -389,7 +394,7 @@ export function SyncSettings({
         <Field label={t("syncUrl")}>
           <input type="url" required value={address} placeholder="https://"
             autoCapitalize="none" autoCorrect="off" spellCheck={false}
-            onChange={e => setDraftAddress(e.target.value)} />
+            disabled={busy} onChange={e => { setDraftAddress(e.target.value); setCode(""); setFeedback(""); }} />
         </Field>
         <Field label={t("syncCode")}>
           <input
@@ -397,13 +402,15 @@ export function SyncSettings({
             autoComplete="off"
             required
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            disabled={busy} placeholder={data.connected && address === savedAddress ? "********" : ""}
+            onChange={(e) => { setCode(e.target.value); setFeedback(""); }}
           />
         </Field>
         <button className="primary" disabled={busy}>
           {t("syncConnect")}
         </button>
       </form>
+      <p role="status" aria-live="polite">{feedback && t(feedback)}</p>
       <p className="hint">{t("syncPrivacy")}</p>
       {data.connected && (
         <div className="settings-actions">

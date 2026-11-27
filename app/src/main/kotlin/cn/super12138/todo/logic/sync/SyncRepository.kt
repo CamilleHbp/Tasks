@@ -17,7 +17,7 @@ typealias SyncStatus = SyncReply
 class SyncRepository(private val context: Context, private val dao: TaskDao, private val tags: SyncedTags) {
     private val work = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val native by lazy { mobile.Mobile.newClient(java.io.File(context.noBackupFilesDir, "sync-v1").absolutePath) }
+    private val native by lazy { mobile.Mobile.newDeviceClient(java.io.File(context.noBackupFilesDir, "sync-v1").absolutePath) }
     private val mutable = MutableStateFlow(SyncStatus())
     val status = mutable.asStateFlow()
     private var started = false

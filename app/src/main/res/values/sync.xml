@@ -36,4 +36,6 @@
     <string name="sync_import_success">Tasks and tags imported.</string>
     <string name="native_sync_status">Live private-network synchronization</string>
     <string name="sync_field_rollover">Roll over to tomorrow</string>
+    <string name="sync_invalid_code">Access code rejected. Check the code and try again.</string>
+    <string name="sync_other_workspace">This device already contains a different workspace.</string>
 </resources>

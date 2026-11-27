@@ -109,7 +109,11 @@ func (h *Helper) sourceID() string {
 }
 
 func (h *Helper) openClient() error {
-	client, err := appclient.New(filepath.Join(h.data, "sync-v1"), tasks.Config())
+	directory := filepath.Join(h.data, "sync-v1")
+	if err := tasks.MigrateAddress(directory); err != nil {
+		return err
+	}
+	client, err := appclient.New(directory, tasks.Config())
 	if err != nil {
 		return err
 	}
@@ -133,7 +137,7 @@ func (h *Helper) openClient() error {
 
 func (h *Helper) status() *Status {
 	view, err := h.client.View()
-	s := &Status{Authenticated: view.Authenticated, Workspace: view.Workspace, Origin: view.Origin,
+	s := &Status{Authenticated: view.Authenticated, Workspace: view.Workspace, Origin: tasks.DisplayAddress(view.Origin),
 		Confirmed: view.SyncStatus.Confirmed, LastSuccessAt: view.SyncStatus.LastSuccessAt, Busy: h.busy, Error: h.failure, Tasks: len(h.snapshot.Tasks)}
 	if err != nil && s.Error == "" {
 		s.Error = core.ErrorCode(err)
@@ -306,7 +310,11 @@ func (h *Helper) handle(r Request) Response {
 			break
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-		origin = discover(ctx, origin)
+		if tasks.DisplayAddress(origin) == tasks.PublicAddress {
+			origin = tasks.PublicAddress
+		} else {
+			origin = discover(ctx, origin)
+		}
 		err := h.client.Connect(ctx, origin, strings.TrimSpace(r.Code))
 		cancel()
 		if err != nil {

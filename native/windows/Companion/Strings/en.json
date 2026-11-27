@@ -19,6 +19,7 @@
   "settings.syncNow": "Sync now",
   "settings.disconnect": "Disconnect",
   "settings.connectHint": "Enter the workspace address and access code you use in Tasks on your other devices. Your widgets then show your tasks without the desktop app.",
+  "settings.success": "Connected to your private workspace.",
   "settings.origin": "Workspace address",
   "settings.code": "Access code",
   "settings.connect": "Connect",

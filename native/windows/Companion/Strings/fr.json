@@ -19,6 +19,7 @@
   "settings.syncNow": "Synchroniser maintenant",
   "settings.disconnect": "Se déconnecter",
   "settings.connectHint": "Saisissez l’adresse de l’espace de travail et le code d’accès utilisés dans Tâches sur vos autres appareils. Vos widgets affichent alors vos tâches sans l’application de bureau.",
+  "settings.success": "Connecté à votre espace privé.",
   "settings.origin": "Adresse de l’espace de travail",
   "settings.code": "Code d’accès",
   "settings.connect": "Se connecter",

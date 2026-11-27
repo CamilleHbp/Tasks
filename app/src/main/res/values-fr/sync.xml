@@ -36,4 +36,6 @@
     <string name="sync_import_success">Tâches et étiquettes importées.</string>
     <string name="native_sync_status">Synchronisation en direct sur le réseau privé</string>
     <string name="sync_field_rollover">Reporter au lendemain</string>
+    <string name="sync_invalid_code">Code d’accès refusé. Vérifiez le code et réessayez.</string>
+    <string name="sync_other_workspace">Cet appareil contient déjà un autre espace privé.</string>
 </resources>

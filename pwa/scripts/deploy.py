@@ -64,6 +64,21 @@ data=Path('/srv/homeserver/data/vervetwodo-web')
 if not data.exists():
     data.mkdir(mode=0o700)
     os.chown(data,10001,10001)
+# Read the live verifier without exporting a workspace code or its account bundle.
+import sqlite3
+routes={}
+for workspace in ("vervetwodo","vervetwodo-emy"):
+    db=sqlite3.connect("file:/srv/homeserver/data/"+workspace+"/vervetwodo.sqlite?mode=ro",uri=True)
+    try:
+        row=db.execute("select json_extract(value,'$.codeHash') from meta where key='account'").fetchone()
+        assert row and len(bytes.fromhex(row[0]))==32 and row[0] not in routes.values()
+        routes["https://"+workspace+".195-15-214-30.sslip.io"]=row[0]
+    finally: db.close()
+route_file=data/"workspace-routes.next"
+fd=os.open(route_file,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
+with os.fdopen(fd,"w") as out: json.dump(routes,out)
+os.chown(route_file,10001,10001)
+route_file.replace(data/"workspace-routes.json")
 def run(*args,cwd=stage):subprocess.run(args,cwd=cwd,check=True)
 current=stage.parent/'current'
 previous=current.resolve() if current.exists() else None

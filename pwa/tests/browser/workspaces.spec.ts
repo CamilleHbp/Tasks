@@ -33,6 +33,7 @@ test("changing sync URL keeps pending edits and saved tasks with their original 
   await page.route("**/api/**", async route=>{
     const url=new URL(route.request().url());
     if(url.pathname==="/api/login")return route.fulfill({json:{ok:true,syncOrigin:url.searchParams.get("workspace")}});
+    if(url.pathname==="/api/logout")return route.fulfill({json:{ok:true}});
     if(url.pathname==="/api/events")return route.fulfill({contentType:"text/event-stream",body:""});
     return route.fulfill({status:503,json:{error:"offline"}});
   });
@@ -60,4 +61,37 @@ test("changing sync URL keeps pending edits and saved tasks with their original 
   await connect(primary);
   await page.getByRole("button",{name:"Close",exact:true}).last().click();
   await expect(page.locator(".task-row")).toContainText("Private sample on the first server");
+});
+
+test("sign-in feedback distinguishes a rejected code and masks saved access", async ({page}) => {
+  await page.route("**/.well-known/vervetwodo-sync", route => route.fulfill({json:{
+    publicOrigin:"https://tasks.camille.studio",syncOrigin:"https://tasks.camille.studio",
+    primaryWorkspace:"https://primary.example"
+  }}));
+  await page.route("**/api/**", route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === "/api/login") {
+      if (route.request().postDataJSON().code !== "sample-valid")
+        return route.fulfill({status:401,json:{error:"request_failed"}});
+      return route.fulfill({json:{ok:true,syncOrigin:"https://primary.example"}});
+    }
+    if (path === "/api/events") return route.fulfill({contentType:"text/event-stream",body:""});
+    return route.fulfill({json:{state:{records:[]},telemetry:{confirmed:true}}});
+  });
+  await page.goto("/");
+  await page.locator(".sync-pill").click();
+  const code = page.getByLabel("Access code",{exact:true});
+  const submit = page.locator("form button.primary");
+  await code.fill("sample-wrong");
+  await submit.click();
+  await expect(page.getByRole("status").filter({hasText:"Access code rejected"})).toBeVisible();
+  await code.fill("sample-valid");
+  await submit.click();
+  await expect(page.getByRole("status").filter({hasText:"Connected to your private workspace"})).toBeVisible();
+  await expect(code).toHaveValue("");
+  await expect(code).toHaveAttribute("placeholder","********");
+  await code.fill("sample-replacement");
+  await page.getByLabel("Sync URL",{exact:true}).fill("https://another.example");
+  await expect(code).toHaveValue("");
+  await expect(code).toHaveAttribute("placeholder","");
 });

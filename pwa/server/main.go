@@ -122,7 +122,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			fail(w, 405)
 			return
 		}
-		send(w, 200, map[string]string{"syncOrigin": g.upstream, "publicOrigin": g.origin})
+		send(w, 200, map[string]string{"syncOrigin": g.origin, "publicOrigin": g.origin, "primaryWorkspace": g.upstream})
 		return
 	}
 	if !strings.HasPrefix(r.URL.Path, "/api/") {
@@ -209,14 +209,7 @@ func (g *gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = io.WriteString(w, result)
 }
-func (g *gateway) login(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Code string `json:"code"`
-	}
-	if decode(w, r, &input) != nil || len(input.Code) > 200 {
-		fail(w, 400)
-		return
-	}
+func (g *gateway) allowLoginAttempt() bool {
 	g.mu.Lock()
 	now := time.Now()
 	recent := g.attempts[:0]
@@ -228,11 +221,25 @@ func (g *gateway) login(w http.ResponseWriter, r *http.Request) {
 	g.attempts = recent
 	if len(recent) >= 10 {
 		g.mu.Unlock()
-		fail(w, 429)
-		return
+		return false
 	}
 	g.attempts = append(g.attempts, now)
 	g.mu.Unlock()
+	return true
+}
+func (g *gateway) login(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Code string `json:"code"`
+	}
+	if decode(w, r, &input) != nil || len(input.Code) > 200 {
+		fail(w, 400)
+		return
+	}
+	now := time.Now()
+	if !g.allowLoginAttempt() {
+		fail(w, 429)
+		return
+	}
 	// Every browser login is checked by the existing owner authentication endpoint.
 	body, _ := json.Marshal(input)
 	request, err := http.NewRequestWithContext(r.Context(), "POST", g.upstream+"/api/v1/login", bytes.NewReader(body))
@@ -389,12 +396,69 @@ func openGateway(directory, upstream, sessionName string) *gateway {
 type workspaces struct {
 	primary  *gateway
 	byOrigin map[string]*gateway
+	byCode   map[string]*gateway
 }
 
 func (ws workspaces) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	g := ws.primary
+	if strings.HasPrefix(r.URL.Path, "/api/v1/") {
+		ws.native(w, r)
+		return
+	}
+	selectedAddress := strings.TrimSuffix(r.URL.Query().Get("workspace"), "/")
+	publicLogin := r.URL.Path == "/api/login" && (selectedAddress == "" || g.allowedOrigin(selectedAddress))
+	if publicLogin && len(ws.byCode) > 0 {
+		if r.Method != http.MethodPost {
+			fail(w, 405)
+			return
+		}
+		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") || (r.Header.Get("Origin") != "" && !g.allowedOrigin(r.Header.Get("Origin"))) || (publicLogin && !g.allowedOrigin(r.Header.Get("Origin"))) {
+			fail(w, 403)
+			return
+		}
+		var input struct {
+			Code string `json:"code"`
+		}
+		if decode(w, r, &input) != nil || len(input.Code) > 200 {
+			fail(w, 400)
+			return
+		}
+		if len(ws.byCode) > 0 {
+			g = ws.byCode[hash(strings.TrimSpace(input.Code))]
+			if g == nil {
+				if !ws.primary.allowLoginAttempt() {
+					fail(w, 429)
+					return
+				}
+				fail(w, 401)
+				return
+			}
+		}
+		body, _ := json.Marshal(input)
+		r.Body = io.NopCloser(bytes.NewReader(body))
+		g.ServeHTTP(w, r)
+		return
+	}
 	if strings.HasPrefix(r.URL.Path, "/api/") {
 		selected := strings.TrimSuffix(r.URL.Query().Get("workspace"), "/")
+		if selected == "" && r.URL.Path != "/api/login" {
+			var active *gateway
+			if g.authenticated(r) {
+				active = g
+			}
+			for _, candidate := range ws.byOrigin {
+				if candidate.authenticated(r) {
+					if active != nil {
+						fail(w, 409)
+						return
+					}
+					active = candidate
+				}
+			}
+			if active != nil {
+				g = active
+			}
+		}
 		if selected != "" && selected != g.upstream && !g.allowedOrigin(selected) {
 			g = ws.byOrigin[selected]
 			if g == nil {
@@ -422,6 +486,30 @@ func main() {
 		}
 		id := hash(origin)
 		ws.byOrigin[origin] = openGateway(filepath.Join(directory, "workspaces", id), origin, "tasks_session_"+id[:16])
+	}
+	if file := os.Getenv("SYNC_ROUTE_FILE"); file != "" {
+		raw, err := os.ReadFile(file)
+		if err != nil {
+			log.Fatal("workspace routing file unavailable")
+		}
+		var entries map[string]string
+		if json.Unmarshal(raw, &entries) != nil || len(entries) != 1+len(ws.byOrigin) {
+			log.Fatal("invalid workspace routing configuration")
+		}
+		ws.byCode = map[string]*gateway{}
+		for origin, digest := range entries {
+			g := ws.byOrigin[origin]
+			if origin == upstream {
+				g = primary
+			}
+			b, err := hex.DecodeString(digest)
+			if g == nil || err != nil || len(b) != 32 || ws.byCode[digest] != nil {
+				log.Fatal("ambiguous workspace routing configuration")
+			}
+			ws.byCode[digest] = g
+		}
+	} else if len(ws.byOrigin) > 0 {
+		log.Fatal("multiple workspaces require SYNC_ROUTE_FILE")
 	}
 	server := http.Server{Addr: env("LISTEN_ADDR", "127.0.0.1:8791"), Handler: ws, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 90 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
 	log.Printf("Tasks web listening on %s", server.Addr)
